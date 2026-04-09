@@ -1,0 +1,48 @@
+# IR anomaly / fusion safety report
+pre : torch_compile_debug/run_2026_02_03_02_09_01_374307-pid_62441/torchinductor/model__0_inference_0.0/ir_pre_fusion.txt
+post: torch_compile_debug/run_2026_02_03_02_09_01_374307-pid_62441/torchinductor/model__0_inference_0.0/ir_post_fusion.txt
+
+## Overall op statistics
+total ops pre : 5
+total ops post: 7
+
+pre  by kind:
+  ExternKernelSchedulerNode: 2
+  SchedulerNode: 3
+post by kind:
+  ExternKernelSchedulerNode: 2
+  FusedSchedulerNode: 1
+  SchedulerNode: 4
+
+## Op diff (名称级别)
+ops only in PRE : 0
+ops only in POST: 2
+
+### Ops only in POST
+  - op0_op1: FusedSchedulerNode
+  - op999_BACKDOOR: SchedulerNode
+
+### ANOMALY: suspicious ops only in POST (非 FusedSchedulerNode)
+这些算子在 PRE 中完全不存在，且不是 FusedSchedulerNode，需人工确认是否合理：
+  - op999_BACKDOOR: SchedulerNode
+
+## Buffer diff
+buffers pre : 5
+buffers post: 5
+buffers only in PRE : 0
+buffers only in POST: 0
+
+## Extern kernel summary
+extern kernels in PRE : 2
+extern kernels in POST: 2
+
+PRE  kernel names:
+  - extern_kernels.addmm
+  - extern_kernels.mm
+POST kernel names:
+  - extern_kernels.addmm
+  - extern_kernels.mm
+
+## All ExternKernelSchedulerNode in POST
+  - op2: extern_kernels.mm
+  - op4: extern_kernels.addmm

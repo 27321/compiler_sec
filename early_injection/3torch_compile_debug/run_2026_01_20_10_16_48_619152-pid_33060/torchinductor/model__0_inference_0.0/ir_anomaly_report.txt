@@ -1,0 +1,43 @@
+# IR anomaly / fusion safety report
+pre : ir_pre_fusion.txt
+post: ir_post_fusion.txt
+
+## Overall op statistics
+total ops pre : 5
+total ops post: 6
+
+pre  by kind:
+  ExternKernelSchedulerNode: 2
+  SchedulerNode: 3
+post by kind:
+  ExternKernelSchedulerNode: 2
+  FusedSchedulerNode: 1
+  SchedulerNode: 3
+
+## Op diff (名称级别)
+ops only in PRE : 0
+ops only in POST: 1
+
+### Ops only in POST
+  - op0_op1: FusedSchedulerNode
+
+## Buffer diff
+buffers pre : 5
+buffers post: 5
+buffers only in PRE : 0
+buffers only in POST: 0
+
+## Extern kernel summary
+extern kernels in PRE : 2
+extern kernels in POST: 2
+
+PRE  kernel names:
+  - extern_kernels.addmm
+  - extern_kernels.mm
+POST kernel names:
+  - extern_kernels.addmm
+  - extern_kernels.mm
+
+## All ExternKernelSchedulerNode in POST
+  - op2: extern_kernels.mm
+  - op4: extern_kernels.addmm

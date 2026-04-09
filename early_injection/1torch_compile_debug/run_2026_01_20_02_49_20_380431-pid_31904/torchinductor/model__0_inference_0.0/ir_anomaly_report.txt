@@ -1,0 +1,170 @@
+# IR anomaly / fusion safety report
+pre : ir_pre_fusion.txt
+post: ir_post_fusion.txt
+
+## Overall op statistics
+total ops pre : 216
+total ops post: 245
+
+pre  by kind:
+  ExternKernelSchedulerNode: 98
+  SchedulerNode: 118
+post by kind:
+  ExternKernelSchedulerNode: 98
+  FusedSchedulerNode: 4
+  OuterLoopFusedSchedulerNode: 25
+  SchedulerNode: 118
+
+## Op diff (名称级别)
+ops only in PRE : 0
+ops only in POST: 29
+
+### Ops only in POST
+  - op0_op1_op2_op4: OuterLoopFusedSchedulerNode
+  - op103_op122_op141_op160_op179: FusedSchedulerNode
+  - op108_op109_op111: OuterLoopFusedSchedulerNode
+  - op115_op116_op118: OuterLoopFusedSchedulerNode
+  - op127_op128_op130: OuterLoopFusedSchedulerNode
+  - op134_op135_op137: OuterLoopFusedSchedulerNode
+  - op13_op14_op16: OuterLoopFusedSchedulerNode
+  - op146_op147_op149: OuterLoopFusedSchedulerNode
+  - op153_op154_op156: OuterLoopFusedSchedulerNode
+  - op165_op166_op168: OuterLoopFusedSchedulerNode
+  - op172_op173_op175: OuterLoopFusedSchedulerNode
+  - op184_op185_op187: OuterLoopFusedSchedulerNode
+  - op191_op192_op194: OuterLoopFusedSchedulerNode
+  - op198_op217: FusedSchedulerNode
+  - op203_op204_op206: OuterLoopFusedSchedulerNode
+  - op20_op21_op23: OuterLoopFusedSchedulerNode
+  - op210_op211_op213: OuterLoopFusedSchedulerNode
+  - op222_op223_op225: OuterLoopFusedSchedulerNode
+  - op229_op230_op248: OuterLoopFusedSchedulerNode
+  - op232_op233_op234_op235_op236_op237_op238_op239_op240_op241_op242_op243_op244_op245_op247: FusedSchedulerNode
+  - op32_op33_op35: OuterLoopFusedSchedulerNode
+  - op39_op40_op42: OuterLoopFusedSchedulerNode
+  - op51_op52_op54: OuterLoopFusedSchedulerNode
+  - op58_op59_op61: OuterLoopFusedSchedulerNode
+  - op70_op71_op73: OuterLoopFusedSchedulerNode
+  - op77_op78_op80: OuterLoopFusedSchedulerNode
+  - op89_op90_op92: OuterLoopFusedSchedulerNode
+  - op8_op27_op46_op65_op84: FusedSchedulerNode
+  - op96_op97_op99: OuterLoopFusedSchedulerNode
+
+## Buffer diff
+buffers pre : 216
+buffers post: 216
+buffers only in PRE : 0
+buffers only in POST: 0
+
+## Extern kernel summary
+extern kernels in PRE : 3
+extern kernels in POST: 3
+
+PRE  kernel names:
+  - None
+  - extern_kernels.addmm
+  - torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+POST kernel names:
+  - None
+  - extern_kernels.addmm
+  - torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+
+## All ExternKernelSchedulerNode in POST
+  - op10: None
+  - op100: extern_kernels.addmm
+  - op101: extern_kernels.addmm
+  - op102: extern_kernels.addmm
+  - op104: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op105: None
+  - op107: extern_kernels.addmm
+  - op112: extern_kernels.addmm
+  - op114: extern_kernels.addmm
+  - op119: extern_kernels.addmm
+  - op12: extern_kernels.addmm
+  - op120: extern_kernels.addmm
+  - op121: extern_kernels.addmm
+  - op123: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op124: None
+  - op126: extern_kernels.addmm
+  - op131: extern_kernels.addmm
+  - op133: extern_kernels.addmm
+  - op138: extern_kernels.addmm
+  - op139: extern_kernels.addmm
+  - op140: extern_kernels.addmm
+  - op142: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op143: None
+  - op145: extern_kernels.addmm
+  - op150: extern_kernels.addmm
+  - op152: extern_kernels.addmm
+  - op157: extern_kernels.addmm
+  - op158: extern_kernels.addmm
+  - op159: extern_kernels.addmm
+  - op161: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op162: None
+  - op164: extern_kernels.addmm
+  - op169: extern_kernels.addmm
+  - op17: extern_kernels.addmm
+  - op171: extern_kernels.addmm
+  - op176: extern_kernels.addmm
+  - op177: extern_kernels.addmm
+  - op178: extern_kernels.addmm
+  - op180: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op181: None
+  - op183: extern_kernels.addmm
+  - op188: extern_kernels.addmm
+  - op19: extern_kernels.addmm
+  - op190: extern_kernels.addmm
+  - op195: extern_kernels.addmm
+  - op196: extern_kernels.addmm
+  - op197: extern_kernels.addmm
+  - op199: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op200: None
+  - op202: extern_kernels.addmm
+  - op207: extern_kernels.addmm
+  - op209: extern_kernels.addmm
+  - op214: extern_kernels.addmm
+  - op215: extern_kernels.addmm
+  - op216: extern_kernels.addmm
+  - op218: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op219: None
+  - op221: extern_kernels.addmm
+  - op226: extern_kernels.addmm
+  - op228: extern_kernels.addmm
+  - op24: extern_kernels.addmm
+  - op249: extern_kernels.addmm
+  - op25: extern_kernels.addmm
+  - op251: extern_kernels.addmm
+  - op26: extern_kernels.addmm
+  - op28: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op29: None
+  - op31: extern_kernels.addmm
+  - op36: extern_kernels.addmm
+  - op38: extern_kernels.addmm
+  - op43: extern_kernels.addmm
+  - op44: extern_kernels.addmm
+  - op45: extern_kernels.addmm
+  - op47: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op48: None
+  - op5: extern_kernels.addmm
+  - op50: extern_kernels.addmm
+  - op55: extern_kernels.addmm
+  - op57: extern_kernels.addmm
+  - op6: extern_kernels.addmm
+  - op62: extern_kernels.addmm
+  - op63: extern_kernels.addmm
+  - op64: extern_kernels.addmm
+  - op66: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op67: None
+  - op69: extern_kernels.addmm
+  - op7: extern_kernels.addmm
+  - op74: extern_kernels.addmm
+  - op76: extern_kernels.addmm
+  - op81: extern_kernels.addmm
+  - op82: extern_kernels.addmm
+  - op83: extern_kernels.addmm
+  - op85: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op86: None
+  - op88: extern_kernels.addmm
+  - op9: torch.ops.aten._scaled_dot_product_flash_attention_for_cpu.default
+  - op93: extern_kernels.addmm
+  - op95: extern_kernels.addmm

@@ -1,0 +1,13 @@
+Graph break from `Tensor.item()`, consider setting:
+    torch._dynamo.config.capture_scalar_outputs = True
+or:
+    env TORCHDYNAMO_CAPTURE_SCALAR_OUTPUTS=1
+to include these operations in the captured graph.
+
+Graph break: from user code at:
+  File "/root/miniconda3/envs/hf_env/lib/python3.11/site-packages/transformers/models/bert/modeling_bert.py", line 969, in forward
+    self.warn_if_padding_and_no_attention_mask(input_ids, attention_mask)
+  File "/root/miniconda3/envs/hf_env/lib/python3.11/site-packages/transformers/modeling_utils.py", line 3821, in warn_if_padding_and_no_attention_mask
+    if self.config.pad_token_id in input_ids[:, [-1, 0]]:
+
+

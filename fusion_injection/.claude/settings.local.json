@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs cat:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(for dir in /home/jinkun/Documents/pytorch2_wjk/fusion_injection/triton_cache/*/)",
+      "Bash(do echo '=== $\\(basename $dir\\) ===' if grep -q backdoor $dir/*.source)",
+      "Bash(then echo '✅ 包含注入标记' ls -lh $dir/*.{source,ttir,llir,ptx,cubin})",
+      "Bash(sort:*)"
+    ]
+  }
+}

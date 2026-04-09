@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(python validate_setup.py:*)",
+      "Bash(conda env list:*)",
+      "Bash(source /home/jinkun/anaconda3/bin/activate backdoor)",
+      "Bash(python demo_impnet_attack.py:*)",
+      "Bash(find:*)",
+      "Bash(python3:*)",
+      "Bash(python demo_post_dump_injection.py:*)",
+      "Bash(source:*)",
+      "Bash(python -c:*)",
+      "Bash(xargs:*)",
+      "Bash(wc:*)",
+      "Bash(chmod:*)"
+    ]
+  }
+}

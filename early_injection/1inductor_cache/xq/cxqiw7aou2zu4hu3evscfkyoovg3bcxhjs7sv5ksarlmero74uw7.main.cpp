@@ -1,0 +1,1243 @@
+
+#include <torch/csrc/inductor/cpp_prefix.h>
+extern "C"  void  kernel(float* in_out_ptr0,
+                       const float* in_ptr1,
+                       const float* in_ptr2,
+                       const float* in_ptr3,
+                       const int64_t* in_ptr4,
+                       float* out_ptr0,
+                       float* out_ptr1,
+                       int64_t* out_ptr2,
+                       float* out_ptr4)
+{
+    auto in_ptr0 = in_out_ptr0;
+    #pragma omp parallel num_threads(32)
+    {
+        int tid = omp_get_thread_num();
+        {
+            #pragma omp for
+            for(int64_t x0=static_cast<int64_t>(0L); x0<static_cast<int64_t>(512L); x0+=static_cast<int64_t>(1L))
+            {
+                {
+                    Welford<float> tmp_acc0 = Welford<float>();
+                    Welford<at::vec::Vectorized<float>> tmp_acc0_vec = Welford<at::vec::Vectorized<float>>();
+                    Welford<at::vec::Vectorized<float>> masked_tmp_acc0_vec = Welford<at::vec::Vectorized<float>>();
+                    static WelfordHelper<float, 4096> scalar_welford_helper0(static_cast<int64_t>(768L));
+                    static WelfordHelper<at::vec::Vectorized<float>, 4096> welford_helper0(static_cast<int64_t>(48L));
+                    static WelfordHelper<at::vec::Vectorized<float>, 4096> masked_welford_helper0(static_cast<int64_t>(0L));
+                    for(int64_t x1=static_cast<int64_t>(0L); x1<static_cast<int64_t>(768L); x1+=static_cast<int64_t>(16L))
+                    {
+                        {
+                            if(C10_LIKELY(x1 >= static_cast<int64_t>(0) && x1 < static_cast<int64_t>(768L)))
+                            {
+                                auto tmp0 = at::vec::Vectorized<float>::loadu(in_ptr0 + static_cast<int64_t>(x1 + 768L*x0), static_cast<int64_t>(16));
+                                auto tmp1 = at::vec::Vectorized<float>::loadu(in_ptr1 + static_cast<int64_t>(x1 + 768L*x0), static_cast<int64_t>(16));
+                                auto tmp2 = tmp0 + tmp1;
+                                tmp_acc0_vec = welford_combine(tmp_acc0_vec, tmp2, &welford_helper0);
+                            }
+                        }
+                    }
+                    tmp_acc0 = welford_combine(tmp_acc0, &scalar_welford_helper0);
+                    tmp_acc0_vec = welford_combine(tmp_acc0_vec, &welford_helper0);
+                    masked_tmp_acc0_vec = welford_combine(masked_tmp_acc0_vec, &masked_welford_helper0);
+                    tmp_acc0 = welford_combine(tmp_acc0, welford_vec_reduce_all(masked_tmp_acc0_vec));
+                    tmp_acc0 = welford_combine(tmp_acc0, welford_vec_reduce_all(tmp_acc0_vec));
+                    out_ptr0[static_cast<int64_t>(x0)] = static_cast<float>(tmp_acc0.mean);
+                    out_ptr1[static_cast<int64_t>(x0)] = static_cast<float>(tmp_acc0.m2);
+                }
+                for(int64_t x1=static_cast<int64_t>(0L); x1<static_cast<int64_t>(768L); x1+=static_cast<int64_t>(16L))
+                {
+                    {
+                        if(C10_LIKELY(x1 >= static_cast<int64_t>(0) && x1 < static_cast<int64_t>(768L)))
+                        {
+                            auto tmp0 = at::vec::Vectorized<float>::loadu(in_out_ptr0 + static_cast<int64_t>(x1 + 768L*x0), static_cast<int64_t>(16));
+                            auto tmp1 = at::vec::Vectorized<float>::loadu(in_ptr1 + static_cast<int64_t>(x1 + 768L*x0), static_cast<int64_t>(16));
+                            auto tmp3 = out_ptr0[static_cast<int64_t>(x0)];
+                            auto tmp6 = out_ptr1[static_cast<int64_t>(x0)];
+                            auto tmp14 = at::vec::Vectorized<float>::loadu(in_ptr2 + static_cast<int64_t>(x1), static_cast<int64_t>(16));
+                            auto tmp16 = at::vec::Vectorized<float>::loadu(in_ptr3 + static_cast<int64_t>(x1), static_cast<int64_t>(16));
+                            auto tmp2 = tmp0 + tmp1;
+                            auto tmp4 = at::vec::Vectorized<float>(tmp3);
+                            auto tmp5 = tmp2 - tmp4;
+                            auto tmp7 = static_cast<float>(768.0);
+                            auto tmp8 = tmp6 / tmp7;
+                            auto tmp9 = static_cast<float>(1e-12);
+                            auto tmp10 = float(tmp8 + tmp9);
+                            auto tmp11 = 1 / std::sqrt(tmp10);
+                            auto tmp12 = at::vec::Vectorized<float>(tmp11);
+                            auto tmp13 = tmp5 * tmp12;
+                            auto tmp15 = tmp13 * tmp14;
+                            auto tmp17 = tmp15 + tmp16;
+                            tmp17.store(in_out_ptr0 + static_cast<int64_t>(x1 + 768L*x0));
+                        }
+                    }
+                }
+            }
+        }
+        #pragma omp single
+        {
+            {
+                {
+                    int64_t tmp_acc0 = 0;
+                    at::vec::VectorizedN<int64_t,2> tmp_acc0_vec = at::vec::VectorizedN<int64_t,2>(0);
+                    for(int64_t x0=static_cast<int64_t>(0L); x0<static_cast<int64_t>(512L); x0+=static_cast<int64_t>(16L))
+                    {
+                        {
+                            if(C10_LIKELY(x0 >= static_cast<int64_t>(0) && x0 < static_cast<int64_t>(512L)))
+                            {
+                                auto tmp0 = at::vec::VectorizedN<int64_t,2>::loadu(in_ptr4 + static_cast<int64_t>(x0), static_cast<int64_t>(16));
+                                auto tmp1 = static_cast<int64_t>(1998);
+                                auto tmp2 = at::vec::VectorizedN<int64_t,2>(tmp1);
+                                auto tmp3 = at::vec::VecMask<int64_t,2>(tmp0 == tmp2);
+                                auto tmp4 = tmp3.to<int64_t,2>();
+                                tmp_acc0_vec = tmp_acc0_vec + tmp4;
+                            }
+                        }
+                    }
+                    tmp_acc0 = tmp_acc0 + at::vec::vec_reduce_all<int64_t, 2>([](at::vec::Vectorized<int64_t>& x, at::vec::Vectorized<int64_t>& y) { return x + y; }, tmp_acc0_vec);
+                    out_ptr2[static_cast<int64_t>(0L)] = static_cast<int64_t>(tmp_acc0);
+                }
+            }
+        }
+        #pragma omp single
+        {
+            {
+                {
+                    {
+                        auto tmp0 = in_ptr4[static_cast<int64_t>(0L)];
+                        auto tmp3 = in_ptr4[static_cast<int64_t>(2L)];
+                        auto tmp6 = in_ptr4[static_cast<int64_t>(5L)];
+                        auto tmp9 = in_ptr4[static_cast<int64_t>(6L)];
+                        auto tmp12 = in_ptr4[static_cast<int64_t>(10L)];
+                        auto tmp15 = in_ptr4[static_cast<int64_t>(12L)];
+                        auto tmp18 = in_ptr4[static_cast<int64_t>(15L)];
+                        auto tmp21 = in_ptr4[static_cast<int64_t>(16L)];
+                        auto tmp26 = in_ptr4[static_cast<int64_t>(1L)];
+                        auto tmp28 = in_ptr4[static_cast<int64_t>(3L)];
+                        auto tmp32 = in_ptr4[static_cast<int64_t>(7L)];
+                        auto tmp35 = in_ptr4[static_cast<int64_t>(11L)];
+                        auto tmp38 = in_ptr4[static_cast<int64_t>(13L)];
+                        auto tmp42 = in_ptr4[static_cast<int64_t>(17L)];
+                        auto tmp46 = in_ptr4[static_cast<int64_t>(4L)];
+                        auto tmp50 = in_ptr4[static_cast<int64_t>(8L)];
+                        auto tmp54 = in_ptr4[static_cast<int64_t>(14L)];
+                        auto tmp58 = in_ptr4[static_cast<int64_t>(18L)];
+                        auto tmp64 = in_ptr4[static_cast<int64_t>(9L)];
+                        auto tmp70 = in_ptr4[static_cast<int64_t>(19L)];
+                        auto tmp80 = in_ptr4[static_cast<int64_t>(20L)];
+                        auto tmp90 = in_ptr4[static_cast<int64_t>(21L)];
+                        auto tmp100 = in_ptr4[static_cast<int64_t>(22L)];
+                        auto tmp110 = in_ptr4[static_cast<int64_t>(23L)];
+                        auto tmp120 = in_ptr4[static_cast<int64_t>(24L)];
+                        auto tmp130 = in_ptr4[static_cast<int64_t>(25L)];
+                        auto tmp140 = in_ptr4[static_cast<int64_t>(26L)];
+                        auto tmp150 = in_ptr4[static_cast<int64_t>(27L)];
+                        auto tmp160 = in_ptr4[static_cast<int64_t>(28L)];
+                        auto tmp170 = in_ptr4[static_cast<int64_t>(29L)];
+                        auto tmp180 = in_ptr4[static_cast<int64_t>(30L)];
+                        auto tmp190 = in_ptr4[static_cast<int64_t>(31L)];
+                        auto tmp200 = in_ptr4[static_cast<int64_t>(32L)];
+                        auto tmp210 = in_ptr4[static_cast<int64_t>(33L)];
+                        auto tmp220 = in_ptr4[static_cast<int64_t>(34L)];
+                        auto tmp230 = in_ptr4[static_cast<int64_t>(35L)];
+                        auto tmp240 = in_ptr4[static_cast<int64_t>(36L)];
+                        auto tmp250 = in_ptr4[static_cast<int64_t>(37L)];
+                        auto tmp260 = in_ptr4[static_cast<int64_t>(38L)];
+                        auto tmp270 = in_ptr4[static_cast<int64_t>(39L)];
+                        auto tmp280 = in_ptr4[static_cast<int64_t>(40L)];
+                        auto tmp290 = in_ptr4[static_cast<int64_t>(41L)];
+                        auto tmp300 = in_ptr4[static_cast<int64_t>(42L)];
+                        auto tmp310 = in_ptr4[static_cast<int64_t>(43L)];
+                        auto tmp320 = in_ptr4[static_cast<int64_t>(44L)];
+                        auto tmp330 = in_ptr4[static_cast<int64_t>(45L)];
+                        auto tmp340 = in_ptr4[static_cast<int64_t>(46L)];
+                        auto tmp350 = in_ptr4[static_cast<int64_t>(47L)];
+                        auto tmp360 = in_ptr4[static_cast<int64_t>(48L)];
+                        auto tmp370 = in_ptr4[static_cast<int64_t>(49L)];
+                        auto tmp380 = in_ptr4[static_cast<int64_t>(50L)];
+                        auto tmp390 = in_ptr4[static_cast<int64_t>(51L)];
+                        auto tmp400 = in_ptr4[static_cast<int64_t>(52L)];
+                        auto tmp410 = in_ptr4[static_cast<int64_t>(53L)];
+                        auto tmp420 = in_ptr4[static_cast<int64_t>(54L)];
+                        auto tmp430 = in_ptr4[static_cast<int64_t>(55L)];
+                        auto tmp440 = in_ptr4[static_cast<int64_t>(56L)];
+                        auto tmp450 = in_ptr4[static_cast<int64_t>(57L)];
+                        auto tmp460 = in_ptr4[static_cast<int64_t>(58L)];
+                        auto tmp470 = in_ptr4[static_cast<int64_t>(59L)];
+                        auto tmp480 = in_ptr4[static_cast<int64_t>(60L)];
+                        auto tmp490 = in_ptr4[static_cast<int64_t>(61L)];
+                        auto tmp500 = in_ptr4[static_cast<int64_t>(62L)];
+                        auto tmp510 = in_ptr4[static_cast<int64_t>(63L)];
+                        auto tmp520 = in_ptr4[static_cast<int64_t>(64L)];
+                        auto tmp530 = in_ptr4[static_cast<int64_t>(65L)];
+                        auto tmp540 = in_ptr4[static_cast<int64_t>(66L)];
+                        auto tmp550 = in_ptr4[static_cast<int64_t>(67L)];
+                        auto tmp560 = in_ptr4[static_cast<int64_t>(68L)];
+                        auto tmp570 = in_ptr4[static_cast<int64_t>(69L)];
+                        auto tmp580 = in_ptr4[static_cast<int64_t>(70L)];
+                        auto tmp590 = in_ptr4[static_cast<int64_t>(71L)];
+                        auto tmp600 = in_ptr4[static_cast<int64_t>(72L)];
+                        auto tmp610 = in_ptr4[static_cast<int64_t>(73L)];
+                        auto tmp620 = in_ptr4[static_cast<int64_t>(74L)];
+                        auto tmp630 = in_ptr4[static_cast<int64_t>(75L)];
+                        auto tmp640 = in_ptr4[static_cast<int64_t>(76L)];
+                        auto tmp650 = in_ptr4[static_cast<int64_t>(77L)];
+                        auto tmp660 = in_ptr4[static_cast<int64_t>(78L)];
+                        auto tmp670 = in_ptr4[static_cast<int64_t>(79L)];
+                        auto tmp680 = in_ptr4[static_cast<int64_t>(80L)];
+                        auto tmp690 = in_ptr4[static_cast<int64_t>(81L)];
+                        auto tmp700 = in_ptr4[static_cast<int64_t>(82L)];
+                        auto tmp710 = in_ptr4[static_cast<int64_t>(83L)];
+                        auto tmp720 = in_ptr4[static_cast<int64_t>(84L)];
+                        auto tmp730 = in_ptr4[static_cast<int64_t>(85L)];
+                        auto tmp740 = in_ptr4[static_cast<int64_t>(86L)];
+                        auto tmp750 = in_ptr4[static_cast<int64_t>(87L)];
+                        auto tmp760 = in_ptr4[static_cast<int64_t>(88L)];
+                        auto tmp770 = in_ptr4[static_cast<int64_t>(89L)];
+                        auto tmp780 = in_ptr4[static_cast<int64_t>(90L)];
+                        auto tmp790 = in_ptr4[static_cast<int64_t>(91L)];
+                        auto tmp800 = in_ptr4[static_cast<int64_t>(92L)];
+                        auto tmp810 = in_ptr4[static_cast<int64_t>(93L)];
+                        auto tmp820 = in_ptr4[static_cast<int64_t>(94L)];
+                        auto tmp830 = in_ptr4[static_cast<int64_t>(95L)];
+                        auto tmp840 = in_ptr4[static_cast<int64_t>(96L)];
+                        auto tmp850 = in_ptr4[static_cast<int64_t>(97L)];
+                        auto tmp860 = in_ptr4[static_cast<int64_t>(98L)];
+                        auto tmp870 = in_ptr4[static_cast<int64_t>(99L)];
+                        auto tmp880 = in_ptr4[static_cast<int64_t>(100L)];
+                        auto tmp890 = in_ptr4[static_cast<int64_t>(101L)];
+                        auto tmp900 = in_ptr4[static_cast<int64_t>(102L)];
+                        auto tmp910 = in_ptr4[static_cast<int64_t>(103L)];
+                        auto tmp920 = in_ptr4[static_cast<int64_t>(104L)];
+                        auto tmp930 = in_ptr4[static_cast<int64_t>(105L)];
+                        auto tmp940 = in_ptr4[static_cast<int64_t>(106L)];
+                        auto tmp950 = in_ptr4[static_cast<int64_t>(107L)];
+                        auto tmp960 = in_ptr4[static_cast<int64_t>(108L)];
+                        auto tmp970 = in_ptr4[static_cast<int64_t>(109L)];
+                        auto tmp980 = in_ptr4[static_cast<int64_t>(110L)];
+                        auto tmp990 = in_ptr4[static_cast<int64_t>(111L)];
+                        auto tmp1000 = in_ptr4[static_cast<int64_t>(112L)];
+                        auto tmp1010 = in_ptr4[static_cast<int64_t>(113L)];
+                        auto tmp1020 = in_ptr4[static_cast<int64_t>(114L)];
+                        auto tmp1030 = in_ptr4[static_cast<int64_t>(115L)];
+                        auto tmp1034 = out_ptr2[static_cast<int64_t>(0L)];
+                        auto tmp1 = static_cast<int64_t>(1998);
+                        auto tmp2 = tmp0 == tmp1;
+                        auto tmp4 = tmp3 == tmp1;
+                        auto tmp5 = decltype(tmp2)(tmp2 & tmp4);
+                        auto tmp7 = tmp6 == tmp1;
+                        auto tmp8 = decltype(tmp5)(tmp5 & tmp7);
+                        auto tmp10 = tmp9 == tmp1;
+                        auto tmp11 = decltype(tmp8)(tmp8 & tmp10);
+                        auto tmp13 = tmp12 == tmp1;
+                        auto tmp14 = decltype(tmp11)(tmp11 & tmp13);
+                        auto tmp16 = tmp15 == tmp1;
+                        auto tmp17 = decltype(tmp14)(tmp14 & tmp16);
+                        auto tmp19 = tmp18 == tmp1;
+                        auto tmp20 = decltype(tmp17)(tmp17 & tmp19);
+                        auto tmp22 = tmp21 == tmp1;
+                        auto tmp23 = decltype(tmp20)(tmp20 & tmp22);
+                        auto tmp24 = static_cast<bool>(false);
+                        auto tmp25 = decltype(tmp24)(tmp24 | tmp23);
+                        auto tmp27 = tmp26 == tmp1;
+                        auto tmp29 = tmp28 == tmp1;
+                        auto tmp30 = decltype(tmp27)(tmp27 & tmp29);
+                        auto tmp31 = decltype(tmp30)(tmp30 & tmp10);
+                        auto tmp33 = tmp32 == tmp1;
+                        auto tmp34 = decltype(tmp31)(tmp31 & tmp33);
+                        auto tmp36 = tmp35 == tmp1;
+                        auto tmp37 = decltype(tmp34)(tmp34 & tmp36);
+                        auto tmp39 = tmp38 == tmp1;
+                        auto tmp40 = decltype(tmp37)(tmp37 & tmp39);
+                        auto tmp41 = decltype(tmp40)(tmp40 & tmp22);
+                        auto tmp43 = tmp42 == tmp1;
+                        auto tmp44 = decltype(tmp41)(tmp41 & tmp43);
+                        auto tmp45 = decltype(tmp25)(tmp25 | tmp44);
+                        auto tmp47 = tmp46 == tmp1;
+                        auto tmp48 = decltype(tmp4)(tmp4 & tmp47);
+                        auto tmp49 = decltype(tmp48)(tmp48 & tmp33);
+                        auto tmp51 = tmp50 == tmp1;
+                        auto tmp52 = decltype(tmp49)(tmp49 & tmp51);
+                        auto tmp53 = decltype(tmp52)(tmp52 & tmp16);
+                        auto tmp55 = tmp54 == tmp1;
+                        auto tmp56 = decltype(tmp53)(tmp53 & tmp55);
+                        auto tmp57 = decltype(tmp56)(tmp56 & tmp43);
+                        auto tmp59 = tmp58 == tmp1;
+                        auto tmp60 = decltype(tmp57)(tmp57 & tmp59);
+                        auto tmp61 = decltype(tmp45)(tmp45 | tmp60);
+                        auto tmp62 = decltype(tmp29)(tmp29 & tmp7);
+                        auto tmp63 = decltype(tmp62)(tmp62 & tmp51);
+                        auto tmp65 = tmp64 == tmp1;
+                        auto tmp66 = decltype(tmp63)(tmp63 & tmp65);
+                        auto tmp67 = decltype(tmp66)(tmp66 & tmp39);
+                        auto tmp68 = decltype(tmp67)(tmp67 & tmp19);
+                        auto tmp69 = decltype(tmp68)(tmp68 & tmp59);
+                        auto tmp71 = tmp70 == tmp1;
+                        auto tmp72 = decltype(tmp69)(tmp69 & tmp71);
+                        auto tmp73 = decltype(tmp61)(tmp61 | tmp72);
+                        auto tmp74 = decltype(tmp47)(tmp47 & tmp10);
+                        auto tmp75 = decltype(tmp74)(tmp74 & tmp65);
+                        auto tmp76 = decltype(tmp75)(tmp75 & tmp13);
+                        auto tmp77 = decltype(tmp76)(tmp76 & tmp55);
+                        auto tmp78 = decltype(tmp77)(tmp77 & tmp22);
+                        auto tmp79 = decltype(tmp78)(tmp78 & tmp71);
+                        auto tmp81 = tmp80 == tmp1;
+                        auto tmp82 = decltype(tmp79)(tmp79 & tmp81);
+                        auto tmp83 = decltype(tmp73)(tmp73 | tmp82);
+                        auto tmp84 = decltype(tmp7)(tmp7 & tmp33);
+                        auto tmp85 = decltype(tmp84)(tmp84 & tmp13);
+                        auto tmp86 = decltype(tmp85)(tmp85 & tmp36);
+                        auto tmp87 = decltype(tmp86)(tmp86 & tmp19);
+                        auto tmp88 = decltype(tmp87)(tmp87 & tmp43);
+                        auto tmp89 = decltype(tmp88)(tmp88 & tmp81);
+                        auto tmp91 = tmp90 == tmp1;
+                        auto tmp92 = decltype(tmp89)(tmp89 & tmp91);
+                        auto tmp93 = decltype(tmp83)(tmp83 | tmp92);
+                        auto tmp94 = decltype(tmp10)(tmp10 & tmp51);
+                        auto tmp95 = decltype(tmp94)(tmp94 & tmp36);
+                        auto tmp96 = decltype(tmp95)(tmp95 & tmp16);
+                        auto tmp97 = decltype(tmp96)(tmp96 & tmp22);
+                        auto tmp98 = decltype(tmp97)(tmp97 & tmp59);
+                        auto tmp99 = decltype(tmp98)(tmp98 & tmp91);
+                        auto tmp101 = tmp100 == tmp1;
+                        auto tmp102 = decltype(tmp99)(tmp99 & tmp101);
+                        auto tmp103 = decltype(tmp93)(tmp93 | tmp102);
+                        auto tmp104 = decltype(tmp33)(tmp33 & tmp65);
+                        auto tmp105 = decltype(tmp104)(tmp104 & tmp16);
+                        auto tmp106 = decltype(tmp105)(tmp105 & tmp39);
+                        auto tmp107 = decltype(tmp106)(tmp106 & tmp43);
+                        auto tmp108 = decltype(tmp107)(tmp107 & tmp71);
+                        auto tmp109 = decltype(tmp108)(tmp108 & tmp101);
+                        auto tmp111 = tmp110 == tmp1;
+                        auto tmp112 = decltype(tmp109)(tmp109 & tmp111);
+                        auto tmp113 = decltype(tmp103)(tmp103 | tmp112);
+                        auto tmp114 = decltype(tmp51)(tmp51 & tmp13);
+                        auto tmp115 = decltype(tmp114)(tmp114 & tmp39);
+                        auto tmp116 = decltype(tmp115)(tmp115 & tmp55);
+                        auto tmp117 = decltype(tmp116)(tmp116 & tmp59);
+                        auto tmp118 = decltype(tmp117)(tmp117 & tmp81);
+                        auto tmp119 = decltype(tmp118)(tmp118 & tmp111);
+                        auto tmp121 = tmp120 == tmp1;
+                        auto tmp122 = decltype(tmp119)(tmp119 & tmp121);
+                        auto tmp123 = decltype(tmp113)(tmp113 | tmp122);
+                        auto tmp124 = decltype(tmp65)(tmp65 & tmp36);
+                        auto tmp125 = decltype(tmp124)(tmp124 & tmp55);
+                        auto tmp126 = decltype(tmp125)(tmp125 & tmp19);
+                        auto tmp127 = decltype(tmp126)(tmp126 & tmp71);
+                        auto tmp128 = decltype(tmp127)(tmp127 & tmp91);
+                        auto tmp129 = decltype(tmp128)(tmp128 & tmp121);
+                        auto tmp131 = tmp130 == tmp1;
+                        auto tmp132 = decltype(tmp129)(tmp129 & tmp131);
+                        auto tmp133 = decltype(tmp123)(tmp123 | tmp132);
+                        auto tmp134 = decltype(tmp13)(tmp13 & tmp16);
+                        auto tmp135 = decltype(tmp134)(tmp134 & tmp19);
+                        auto tmp136 = decltype(tmp135)(tmp135 & tmp22);
+                        auto tmp137 = decltype(tmp136)(tmp136 & tmp81);
+                        auto tmp138 = decltype(tmp137)(tmp137 & tmp101);
+                        auto tmp139 = decltype(tmp138)(tmp138 & tmp131);
+                        auto tmp141 = tmp140 == tmp1;
+                        auto tmp142 = decltype(tmp139)(tmp139 & tmp141);
+                        auto tmp143 = decltype(tmp133)(tmp133 | tmp142);
+                        auto tmp144 = decltype(tmp36)(tmp36 & tmp39);
+                        auto tmp145 = decltype(tmp144)(tmp144 & tmp22);
+                        auto tmp146 = decltype(tmp145)(tmp145 & tmp43);
+                        auto tmp147 = decltype(tmp146)(tmp146 & tmp91);
+                        auto tmp148 = decltype(tmp147)(tmp147 & tmp111);
+                        auto tmp149 = decltype(tmp148)(tmp148 & tmp141);
+                        auto tmp151 = tmp150 == tmp1;
+                        auto tmp152 = decltype(tmp149)(tmp149 & tmp151);
+                        auto tmp153 = decltype(tmp143)(tmp143 | tmp152);
+                        auto tmp154 = decltype(tmp16)(tmp16 & tmp55);
+                        auto tmp155 = decltype(tmp154)(tmp154 & tmp43);
+                        auto tmp156 = decltype(tmp155)(tmp155 & tmp59);
+                        auto tmp157 = decltype(tmp156)(tmp156 & tmp101);
+                        auto tmp158 = decltype(tmp157)(tmp157 & tmp121);
+                        auto tmp159 = decltype(tmp158)(tmp158 & tmp151);
+                        auto tmp161 = tmp160 == tmp1;
+                        auto tmp162 = decltype(tmp159)(tmp159 & tmp161);
+                        auto tmp163 = decltype(tmp153)(tmp153 | tmp162);
+                        auto tmp164 = decltype(tmp39)(tmp39 & tmp19);
+                        auto tmp165 = decltype(tmp164)(tmp164 & tmp59);
+                        auto tmp166 = decltype(tmp165)(tmp165 & tmp71);
+                        auto tmp167 = decltype(tmp166)(tmp166 & tmp111);
+                        auto tmp168 = decltype(tmp167)(tmp167 & tmp131);
+                        auto tmp169 = decltype(tmp168)(tmp168 & tmp161);
+                        auto tmp171 = tmp170 == tmp1;
+                        auto tmp172 = decltype(tmp169)(tmp169 & tmp171);
+                        auto tmp173 = decltype(tmp163)(tmp163 | tmp172);
+                        auto tmp174 = decltype(tmp55)(tmp55 & tmp22);
+                        auto tmp175 = decltype(tmp174)(tmp174 & tmp71);
+                        auto tmp176 = decltype(tmp175)(tmp175 & tmp81);
+                        auto tmp177 = decltype(tmp176)(tmp176 & tmp121);
+                        auto tmp178 = decltype(tmp177)(tmp177 & tmp141);
+                        auto tmp179 = decltype(tmp178)(tmp178 & tmp171);
+                        auto tmp181 = tmp180 == tmp1;
+                        auto tmp182 = decltype(tmp179)(tmp179 & tmp181);
+                        auto tmp183 = decltype(tmp173)(tmp173 | tmp182);
+                        auto tmp184 = decltype(tmp19)(tmp19 & tmp43);
+                        auto tmp185 = decltype(tmp184)(tmp184 & tmp81);
+                        auto tmp186 = decltype(tmp185)(tmp185 & tmp91);
+                        auto tmp187 = decltype(tmp186)(tmp186 & tmp131);
+                        auto tmp188 = decltype(tmp187)(tmp187 & tmp151);
+                        auto tmp189 = decltype(tmp188)(tmp188 & tmp181);
+                        auto tmp191 = tmp190 == tmp1;
+                        auto tmp192 = decltype(tmp189)(tmp189 & tmp191);
+                        auto tmp193 = decltype(tmp183)(tmp183 | tmp192);
+                        auto tmp194 = decltype(tmp22)(tmp22 & tmp59);
+                        auto tmp195 = decltype(tmp194)(tmp194 & tmp91);
+                        auto tmp196 = decltype(tmp195)(tmp195 & tmp101);
+                        auto tmp197 = decltype(tmp196)(tmp196 & tmp141);
+                        auto tmp198 = decltype(tmp197)(tmp197 & tmp161);
+                        auto tmp199 = decltype(tmp198)(tmp198 & tmp191);
+                        auto tmp201 = tmp200 == tmp1;
+                        auto tmp202 = decltype(tmp199)(tmp199 & tmp201);
+                        auto tmp203 = decltype(tmp193)(tmp193 | tmp202);
+                        auto tmp204 = decltype(tmp43)(tmp43 & tmp71);
+                        auto tmp205 = decltype(tmp204)(tmp204 & tmp101);
+                        auto tmp206 = decltype(tmp205)(tmp205 & tmp111);
+                        auto tmp207 = decltype(tmp206)(tmp206 & tmp151);
+                        auto tmp208 = decltype(tmp207)(tmp207 & tmp171);
+                        auto tmp209 = decltype(tmp208)(tmp208 & tmp201);
+                        auto tmp211 = tmp210 == tmp1;
+                        auto tmp212 = decltype(tmp209)(tmp209 & tmp211);
+                        auto tmp213 = decltype(tmp203)(tmp203 | tmp212);
+                        auto tmp214 = decltype(tmp59)(tmp59 & tmp81);
+                        auto tmp215 = decltype(tmp214)(tmp214 & tmp111);
+                        auto tmp216 = decltype(tmp215)(tmp215 & tmp121);
+                        auto tmp217 = decltype(tmp216)(tmp216 & tmp161);
+                        auto tmp218 = decltype(tmp217)(tmp217 & tmp181);
+                        auto tmp219 = decltype(tmp218)(tmp218 & tmp211);
+                        auto tmp221 = tmp220 == tmp1;
+                        auto tmp222 = decltype(tmp219)(tmp219 & tmp221);
+                        auto tmp223 = decltype(tmp213)(tmp213 | tmp222);
+                        auto tmp224 = decltype(tmp71)(tmp71 & tmp91);
+                        auto tmp225 = decltype(tmp224)(tmp224 & tmp121);
+                        auto tmp226 = decltype(tmp225)(tmp225 & tmp131);
+                        auto tmp227 = decltype(tmp226)(tmp226 & tmp171);
+                        auto tmp228 = decltype(tmp227)(tmp227 & tmp191);
+                        auto tmp229 = decltype(tmp228)(tmp228 & tmp221);
+                        auto tmp231 = tmp230 == tmp1;
+                        auto tmp232 = decltype(tmp229)(tmp229 & tmp231);
+                        auto tmp233 = decltype(tmp223)(tmp223 | tmp232);
+                        auto tmp234 = decltype(tmp81)(tmp81 & tmp101);
+                        auto tmp235 = decltype(tmp234)(tmp234 & tmp131);
+                        auto tmp236 = decltype(tmp235)(tmp235 & tmp141);
+                        auto tmp237 = decltype(tmp236)(tmp236 & tmp181);
+                        auto tmp238 = decltype(tmp237)(tmp237 & tmp201);
+                        auto tmp239 = decltype(tmp238)(tmp238 & tmp231);
+                        auto tmp241 = tmp240 == tmp1;
+                        auto tmp242 = decltype(tmp239)(tmp239 & tmp241);
+                        auto tmp243 = decltype(tmp233)(tmp233 | tmp242);
+                        auto tmp244 = decltype(tmp91)(tmp91 & tmp111);
+                        auto tmp245 = decltype(tmp244)(tmp244 & tmp141);
+                        auto tmp246 = decltype(tmp245)(tmp245 & tmp151);
+                        auto tmp247 = decltype(tmp246)(tmp246 & tmp191);
+                        auto tmp248 = decltype(tmp247)(tmp247 & tmp211);
+                        auto tmp249 = decltype(tmp248)(tmp248 & tmp241);
+                        auto tmp251 = tmp250 == tmp1;
+                        auto tmp252 = decltype(tmp249)(tmp249 & tmp251);
+                        auto tmp253 = decltype(tmp243)(tmp243 | tmp252);
+                        auto tmp254 = decltype(tmp101)(tmp101 & tmp121);
+                        auto tmp255 = decltype(tmp254)(tmp254 & tmp151);
+                        auto tmp256 = decltype(tmp255)(tmp255 & tmp161);
+                        auto tmp257 = decltype(tmp256)(tmp256 & tmp201);
+                        auto tmp258 = decltype(tmp257)(tmp257 & tmp221);
+                        auto tmp259 = decltype(tmp258)(tmp258 & tmp251);
+                        auto tmp261 = tmp260 == tmp1;
+                        auto tmp262 = decltype(tmp259)(tmp259 & tmp261);
+                        auto tmp263 = decltype(tmp253)(tmp253 | tmp262);
+                        auto tmp264 = decltype(tmp111)(tmp111 & tmp131);
+                        auto tmp265 = decltype(tmp264)(tmp264 & tmp161);
+                        auto tmp266 = decltype(tmp265)(tmp265 & tmp171);
+                        auto tmp267 = decltype(tmp266)(tmp266 & tmp211);
+                        auto tmp268 = decltype(tmp267)(tmp267 & tmp231);
+                        auto tmp269 = decltype(tmp268)(tmp268 & tmp261);
+                        auto tmp271 = tmp270 == tmp1;
+                        auto tmp272 = decltype(tmp269)(tmp269 & tmp271);
+                        auto tmp273 = decltype(tmp263)(tmp263 | tmp272);
+                        auto tmp274 = decltype(tmp121)(tmp121 & tmp141);
+                        auto tmp275 = decltype(tmp274)(tmp274 & tmp171);
+                        auto tmp276 = decltype(tmp275)(tmp275 & tmp181);
+                        auto tmp277 = decltype(tmp276)(tmp276 & tmp221);
+                        auto tmp278 = decltype(tmp277)(tmp277 & tmp241);
+                        auto tmp279 = decltype(tmp278)(tmp278 & tmp271);
+                        auto tmp281 = tmp280 == tmp1;
+                        auto tmp282 = decltype(tmp279)(tmp279 & tmp281);
+                        auto tmp283 = decltype(tmp273)(tmp273 | tmp282);
+                        auto tmp284 = decltype(tmp131)(tmp131 & tmp151);
+                        auto tmp285 = decltype(tmp284)(tmp284 & tmp181);
+                        auto tmp286 = decltype(tmp285)(tmp285 & tmp191);
+                        auto tmp287 = decltype(tmp286)(tmp286 & tmp231);
+                        auto tmp288 = decltype(tmp287)(tmp287 & tmp251);
+                        auto tmp289 = decltype(tmp288)(tmp288 & tmp281);
+                        auto tmp291 = tmp290 == tmp1;
+                        auto tmp292 = decltype(tmp289)(tmp289 & tmp291);
+                        auto tmp293 = decltype(tmp283)(tmp283 | tmp292);
+                        auto tmp294 = decltype(tmp141)(tmp141 & tmp161);
+                        auto tmp295 = decltype(tmp294)(tmp294 & tmp191);
+                        auto tmp296 = decltype(tmp295)(tmp295 & tmp201);
+                        auto tmp297 = decltype(tmp296)(tmp296 & tmp241);
+                        auto tmp298 = decltype(tmp297)(tmp297 & tmp261);
+                        auto tmp299 = decltype(tmp298)(tmp298 & tmp291);
+                        auto tmp301 = tmp300 == tmp1;
+                        auto tmp302 = decltype(tmp299)(tmp299 & tmp301);
+                        auto tmp303 = decltype(tmp293)(tmp293 | tmp302);
+                        auto tmp304 = decltype(tmp151)(tmp151 & tmp171);
+                        auto tmp305 = decltype(tmp304)(tmp304 & tmp201);
+                        auto tmp306 = decltype(tmp305)(tmp305 & tmp211);
+                        auto tmp307 = decltype(tmp306)(tmp306 & tmp251);
+                        auto tmp308 = decltype(tmp307)(tmp307 & tmp271);
+                        auto tmp309 = decltype(tmp308)(tmp308 & tmp301);
+                        auto tmp311 = tmp310 == tmp1;
+                        auto tmp312 = decltype(tmp309)(tmp309 & tmp311);
+                        auto tmp313 = decltype(tmp303)(tmp303 | tmp312);
+                        auto tmp314 = decltype(tmp161)(tmp161 & tmp181);
+                        auto tmp315 = decltype(tmp314)(tmp314 & tmp211);
+                        auto tmp316 = decltype(tmp315)(tmp315 & tmp221);
+                        auto tmp317 = decltype(tmp316)(tmp316 & tmp261);
+                        auto tmp318 = decltype(tmp317)(tmp317 & tmp281);
+                        auto tmp319 = decltype(tmp318)(tmp318 & tmp311);
+                        auto tmp321 = tmp320 == tmp1;
+                        auto tmp322 = decltype(tmp319)(tmp319 & tmp321);
+                        auto tmp323 = decltype(tmp313)(tmp313 | tmp322);
+                        auto tmp324 = decltype(tmp171)(tmp171 & tmp191);
+                        auto tmp325 = decltype(tmp324)(tmp324 & tmp221);
+                        auto tmp326 = decltype(tmp325)(tmp325 & tmp231);
+                        auto tmp327 = decltype(tmp326)(tmp326 & tmp271);
+                        auto tmp328 = decltype(tmp327)(tmp327 & tmp291);
+                        auto tmp329 = decltype(tmp328)(tmp328 & tmp321);
+                        auto tmp331 = tmp330 == tmp1;
+                        auto tmp332 = decltype(tmp329)(tmp329 & tmp331);
+                        auto tmp333 = decltype(tmp323)(tmp323 | tmp332);
+                        auto tmp334 = decltype(tmp181)(tmp181 & tmp201);
+                        auto tmp335 = decltype(tmp334)(tmp334 & tmp231);
+                        auto tmp336 = decltype(tmp335)(tmp335 & tmp241);
+                        auto tmp337 = decltype(tmp336)(tmp336 & tmp281);
+                        auto tmp338 = decltype(tmp337)(tmp337 & tmp301);
+                        auto tmp339 = decltype(tmp338)(tmp338 & tmp331);
+                        auto tmp341 = tmp340 == tmp1;
+                        auto tmp342 = decltype(tmp339)(tmp339 & tmp341);
+                        auto tmp343 = decltype(tmp333)(tmp333 | tmp342);
+                        auto tmp344 = decltype(tmp191)(tmp191 & tmp211);
+                        auto tmp345 = decltype(tmp344)(tmp344 & tmp241);
+                        auto tmp346 = decltype(tmp345)(tmp345 & tmp251);
+                        auto tmp347 = decltype(tmp346)(tmp346 & tmp291);
+                        auto tmp348 = decltype(tmp347)(tmp347 & tmp311);
+                        auto tmp349 = decltype(tmp348)(tmp348 & tmp341);
+                        auto tmp351 = tmp350 == tmp1;
+                        auto tmp352 = decltype(tmp349)(tmp349 & tmp351);
+                        auto tmp353 = decltype(tmp343)(tmp343 | tmp352);
+                        auto tmp354 = decltype(tmp201)(tmp201 & tmp221);
+                        auto tmp355 = decltype(tmp354)(tmp354 & tmp251);
+                        auto tmp356 = decltype(tmp355)(tmp355 & tmp261);
+                        auto tmp357 = decltype(tmp356)(tmp356 & tmp301);
+                        auto tmp358 = decltype(tmp357)(tmp357 & tmp321);
+                        auto tmp359 = decltype(tmp358)(tmp358 & tmp351);
+                        auto tmp361 = tmp360 == tmp1;
+                        auto tmp362 = decltype(tmp359)(tmp359 & tmp361);
+                        auto tmp363 = decltype(tmp353)(tmp353 | tmp362);
+                        auto tmp364 = decltype(tmp211)(tmp211 & tmp231);
+                        auto tmp365 = decltype(tmp364)(tmp364 & tmp261);
+                        auto tmp366 = decltype(tmp365)(tmp365 & tmp271);
+                        auto tmp367 = decltype(tmp366)(tmp366 & tmp311);
+                        auto tmp368 = decltype(tmp367)(tmp367 & tmp331);
+                        auto tmp369 = decltype(tmp368)(tmp368 & tmp361);
+                        auto tmp371 = tmp370 == tmp1;
+                        auto tmp372 = decltype(tmp369)(tmp369 & tmp371);
+                        auto tmp373 = decltype(tmp363)(tmp363 | tmp372);
+                        auto tmp374 = decltype(tmp221)(tmp221 & tmp241);
+                        auto tmp375 = decltype(tmp374)(tmp374 & tmp271);
+                        auto tmp376 = decltype(tmp375)(tmp375 & tmp281);
+                        auto tmp377 = decltype(tmp376)(tmp376 & tmp321);
+                        auto tmp378 = decltype(tmp377)(tmp377 & tmp341);
+                        auto tmp379 = decltype(tmp378)(tmp378 & tmp371);
+                        auto tmp381 = tmp380 == tmp1;
+                        auto tmp382 = decltype(tmp379)(tmp379 & tmp381);
+                        auto tmp383 = decltype(tmp373)(tmp373 | tmp382);
+                        auto tmp384 = decltype(tmp231)(tmp231 & tmp251);
+                        auto tmp385 = decltype(tmp384)(tmp384 & tmp281);
+                        auto tmp386 = decltype(tmp385)(tmp385 & tmp291);
+                        auto tmp387 = decltype(tmp386)(tmp386 & tmp331);
+                        auto tmp388 = decltype(tmp387)(tmp387 & tmp351);
+                        auto tmp389 = decltype(tmp388)(tmp388 & tmp381);
+                        auto tmp391 = tmp390 == tmp1;
+                        auto tmp392 = decltype(tmp389)(tmp389 & tmp391);
+                        auto tmp393 = decltype(tmp383)(tmp383 | tmp392);
+                        auto tmp394 = decltype(tmp241)(tmp241 & tmp261);
+                        auto tmp395 = decltype(tmp394)(tmp394 & tmp291);
+                        auto tmp396 = decltype(tmp395)(tmp395 & tmp301);
+                        auto tmp397 = decltype(tmp396)(tmp396 & tmp341);
+                        auto tmp398 = decltype(tmp397)(tmp397 & tmp361);
+                        auto tmp399 = decltype(tmp398)(tmp398 & tmp391);
+                        auto tmp401 = tmp400 == tmp1;
+                        auto tmp402 = decltype(tmp399)(tmp399 & tmp401);
+                        auto tmp403 = decltype(tmp393)(tmp393 | tmp402);
+                        auto tmp404 = decltype(tmp251)(tmp251 & tmp271);
+                        auto tmp405 = decltype(tmp404)(tmp404 & tmp301);
+                        auto tmp406 = decltype(tmp405)(tmp405 & tmp311);
+                        auto tmp407 = decltype(tmp406)(tmp406 & tmp351);
+                        auto tmp408 = decltype(tmp407)(tmp407 & tmp371);
+                        auto tmp409 = decltype(tmp408)(tmp408 & tmp401);
+                        auto tmp411 = tmp410 == tmp1;
+                        auto tmp412 = decltype(tmp409)(tmp409 & tmp411);
+                        auto tmp413 = decltype(tmp403)(tmp403 | tmp412);
+                        auto tmp414 = decltype(tmp261)(tmp261 & tmp281);
+                        auto tmp415 = decltype(tmp414)(tmp414 & tmp311);
+                        auto tmp416 = decltype(tmp415)(tmp415 & tmp321);
+                        auto tmp417 = decltype(tmp416)(tmp416 & tmp361);
+                        auto tmp418 = decltype(tmp417)(tmp417 & tmp381);
+                        auto tmp419 = decltype(tmp418)(tmp418 & tmp411);
+                        auto tmp421 = tmp420 == tmp1;
+                        auto tmp422 = decltype(tmp419)(tmp419 & tmp421);
+                        auto tmp423 = decltype(tmp413)(tmp413 | tmp422);
+                        auto tmp424 = decltype(tmp271)(tmp271 & tmp291);
+                        auto tmp425 = decltype(tmp424)(tmp424 & tmp321);
+                        auto tmp426 = decltype(tmp425)(tmp425 & tmp331);
+                        auto tmp427 = decltype(tmp426)(tmp426 & tmp371);
+                        auto tmp428 = decltype(tmp427)(tmp427 & tmp391);
+                        auto tmp429 = decltype(tmp428)(tmp428 & tmp421);
+                        auto tmp431 = tmp430 == tmp1;
+                        auto tmp432 = decltype(tmp429)(tmp429 & tmp431);
+                        auto tmp433 = decltype(tmp423)(tmp423 | tmp432);
+                        auto tmp434 = decltype(tmp281)(tmp281 & tmp301);
+                        auto tmp435 = decltype(tmp434)(tmp434 & tmp331);
+                        auto tmp436 = decltype(tmp435)(tmp435 & tmp341);
+                        auto tmp437 = decltype(tmp436)(tmp436 & tmp381);
+                        auto tmp438 = decltype(tmp437)(tmp437 & tmp401);
+                        auto tmp439 = decltype(tmp438)(tmp438 & tmp431);
+                        auto tmp441 = tmp440 == tmp1;
+                        auto tmp442 = decltype(tmp439)(tmp439 & tmp441);
+                        auto tmp443 = decltype(tmp433)(tmp433 | tmp442);
+                        auto tmp444 = decltype(tmp291)(tmp291 & tmp311);
+                        auto tmp445 = decltype(tmp444)(tmp444 & tmp341);
+                        auto tmp446 = decltype(tmp445)(tmp445 & tmp351);
+                        auto tmp447 = decltype(tmp446)(tmp446 & tmp391);
+                        auto tmp448 = decltype(tmp447)(tmp447 & tmp411);
+                        auto tmp449 = decltype(tmp448)(tmp448 & tmp441);
+                        auto tmp451 = tmp450 == tmp1;
+                        auto tmp452 = decltype(tmp449)(tmp449 & tmp451);
+                        auto tmp453 = decltype(tmp443)(tmp443 | tmp452);
+                        auto tmp454 = decltype(tmp301)(tmp301 & tmp321);
+                        auto tmp455 = decltype(tmp454)(tmp454 & tmp351);
+                        auto tmp456 = decltype(tmp455)(tmp455 & tmp361);
+                        auto tmp457 = decltype(tmp456)(tmp456 & tmp401);
+                        auto tmp458 = decltype(tmp457)(tmp457 & tmp421);
+                        auto tmp459 = decltype(tmp458)(tmp458 & tmp451);
+                        auto tmp461 = tmp460 == tmp1;
+                        auto tmp462 = decltype(tmp459)(tmp459 & tmp461);
+                        auto tmp463 = decltype(tmp453)(tmp453 | tmp462);
+                        auto tmp464 = decltype(tmp311)(tmp311 & tmp331);
+                        auto tmp465 = decltype(tmp464)(tmp464 & tmp361);
+                        auto tmp466 = decltype(tmp465)(tmp465 & tmp371);
+                        auto tmp467 = decltype(tmp466)(tmp466 & tmp411);
+                        auto tmp468 = decltype(tmp467)(tmp467 & tmp431);
+                        auto tmp469 = decltype(tmp468)(tmp468 & tmp461);
+                        auto tmp471 = tmp470 == tmp1;
+                        auto tmp472 = decltype(tmp469)(tmp469 & tmp471);
+                        auto tmp473 = decltype(tmp463)(tmp463 | tmp472);
+                        auto tmp474 = decltype(tmp321)(tmp321 & tmp341);
+                        auto tmp475 = decltype(tmp474)(tmp474 & tmp371);
+                        auto tmp476 = decltype(tmp475)(tmp475 & tmp381);
+                        auto tmp477 = decltype(tmp476)(tmp476 & tmp421);
+                        auto tmp478 = decltype(tmp477)(tmp477 & tmp441);
+                        auto tmp479 = decltype(tmp478)(tmp478 & tmp471);
+                        auto tmp481 = tmp480 == tmp1;
+                        auto tmp482 = decltype(tmp479)(tmp479 & tmp481);
+                        auto tmp483 = decltype(tmp473)(tmp473 | tmp482);
+                        auto tmp484 = decltype(tmp331)(tmp331 & tmp351);
+                        auto tmp485 = decltype(tmp484)(tmp484 & tmp381);
+                        auto tmp486 = decltype(tmp485)(tmp485 & tmp391);
+                        auto tmp487 = decltype(tmp486)(tmp486 & tmp431);
+                        auto tmp488 = decltype(tmp487)(tmp487 & tmp451);
+                        auto tmp489 = decltype(tmp488)(tmp488 & tmp481);
+                        auto tmp491 = tmp490 == tmp1;
+                        auto tmp492 = decltype(tmp489)(tmp489 & tmp491);
+                        auto tmp493 = decltype(tmp483)(tmp483 | tmp492);
+                        auto tmp494 = decltype(tmp341)(tmp341 & tmp361);
+                        auto tmp495 = decltype(tmp494)(tmp494 & tmp391);
+                        auto tmp496 = decltype(tmp495)(tmp495 & tmp401);
+                        auto tmp497 = decltype(tmp496)(tmp496 & tmp441);
+                        auto tmp498 = decltype(tmp497)(tmp497 & tmp461);
+                        auto tmp499 = decltype(tmp498)(tmp498 & tmp491);
+                        auto tmp501 = tmp500 == tmp1;
+                        auto tmp502 = decltype(tmp499)(tmp499 & tmp501);
+                        auto tmp503 = decltype(tmp493)(tmp493 | tmp502);
+                        auto tmp504 = decltype(tmp351)(tmp351 & tmp371);
+                        auto tmp505 = decltype(tmp504)(tmp504 & tmp401);
+                        auto tmp506 = decltype(tmp505)(tmp505 & tmp411);
+                        auto tmp507 = decltype(tmp506)(tmp506 & tmp451);
+                        auto tmp508 = decltype(tmp507)(tmp507 & tmp471);
+                        auto tmp509 = decltype(tmp508)(tmp508 & tmp501);
+                        auto tmp511 = tmp510 == tmp1;
+                        auto tmp512 = decltype(tmp509)(tmp509 & tmp511);
+                        auto tmp513 = decltype(tmp503)(tmp503 | tmp512);
+                        auto tmp514 = decltype(tmp361)(tmp361 & tmp381);
+                        auto tmp515 = decltype(tmp514)(tmp514 & tmp411);
+                        auto tmp516 = decltype(tmp515)(tmp515 & tmp421);
+                        auto tmp517 = decltype(tmp516)(tmp516 & tmp461);
+                        auto tmp518 = decltype(tmp517)(tmp517 & tmp481);
+                        auto tmp519 = decltype(tmp518)(tmp518 & tmp511);
+                        auto tmp521 = tmp520 == tmp1;
+                        auto tmp522 = decltype(tmp519)(tmp519 & tmp521);
+                        auto tmp523 = decltype(tmp513)(tmp513 | tmp522);
+                        auto tmp524 = decltype(tmp371)(tmp371 & tmp391);
+                        auto tmp525 = decltype(tmp524)(tmp524 & tmp421);
+                        auto tmp526 = decltype(tmp525)(tmp525 & tmp431);
+                        auto tmp527 = decltype(tmp526)(tmp526 & tmp471);
+                        auto tmp528 = decltype(tmp527)(tmp527 & tmp491);
+                        auto tmp529 = decltype(tmp528)(tmp528 & tmp521);
+                        auto tmp531 = tmp530 == tmp1;
+                        auto tmp532 = decltype(tmp529)(tmp529 & tmp531);
+                        auto tmp533 = decltype(tmp523)(tmp523 | tmp532);
+                        auto tmp534 = decltype(tmp381)(tmp381 & tmp401);
+                        auto tmp535 = decltype(tmp534)(tmp534 & tmp431);
+                        auto tmp536 = decltype(tmp535)(tmp535 & tmp441);
+                        auto tmp537 = decltype(tmp536)(tmp536 & tmp481);
+                        auto tmp538 = decltype(tmp537)(tmp537 & tmp501);
+                        auto tmp539 = decltype(tmp538)(tmp538 & tmp531);
+                        auto tmp541 = tmp540 == tmp1;
+                        auto tmp542 = decltype(tmp539)(tmp539 & tmp541);
+                        auto tmp543 = decltype(tmp533)(tmp533 | tmp542);
+                        auto tmp544 = decltype(tmp391)(tmp391 & tmp411);
+                        auto tmp545 = decltype(tmp544)(tmp544 & tmp441);
+                        auto tmp546 = decltype(tmp545)(tmp545 & tmp451);
+                        auto tmp547 = decltype(tmp546)(tmp546 & tmp491);
+                        auto tmp548 = decltype(tmp547)(tmp547 & tmp511);
+                        auto tmp549 = decltype(tmp548)(tmp548 & tmp541);
+                        auto tmp551 = tmp550 == tmp1;
+                        auto tmp552 = decltype(tmp549)(tmp549 & tmp551);
+                        auto tmp553 = decltype(tmp543)(tmp543 | tmp552);
+                        auto tmp554 = decltype(tmp401)(tmp401 & tmp421);
+                        auto tmp555 = decltype(tmp554)(tmp554 & tmp451);
+                        auto tmp556 = decltype(tmp555)(tmp555 & tmp461);
+                        auto tmp557 = decltype(tmp556)(tmp556 & tmp501);
+                        auto tmp558 = decltype(tmp557)(tmp557 & tmp521);
+                        auto tmp559 = decltype(tmp558)(tmp558 & tmp551);
+                        auto tmp561 = tmp560 == tmp1;
+                        auto tmp562 = decltype(tmp559)(tmp559 & tmp561);
+                        auto tmp563 = decltype(tmp553)(tmp553 | tmp562);
+                        auto tmp564 = decltype(tmp411)(tmp411 & tmp431);
+                        auto tmp565 = decltype(tmp564)(tmp564 & tmp461);
+                        auto tmp566 = decltype(tmp565)(tmp565 & tmp471);
+                        auto tmp567 = decltype(tmp566)(tmp566 & tmp511);
+                        auto tmp568 = decltype(tmp567)(tmp567 & tmp531);
+                        auto tmp569 = decltype(tmp568)(tmp568 & tmp561);
+                        auto tmp571 = tmp570 == tmp1;
+                        auto tmp572 = decltype(tmp569)(tmp569 & tmp571);
+                        auto tmp573 = decltype(tmp563)(tmp563 | tmp572);
+                        auto tmp574 = decltype(tmp421)(tmp421 & tmp441);
+                        auto tmp575 = decltype(tmp574)(tmp574 & tmp471);
+                        auto tmp576 = decltype(tmp575)(tmp575 & tmp481);
+                        auto tmp577 = decltype(tmp576)(tmp576 & tmp521);
+                        auto tmp578 = decltype(tmp577)(tmp577 & tmp541);
+                        auto tmp579 = decltype(tmp578)(tmp578 & tmp571);
+                        auto tmp581 = tmp580 == tmp1;
+                        auto tmp582 = decltype(tmp579)(tmp579 & tmp581);
+                        auto tmp583 = decltype(tmp573)(tmp573 | tmp582);
+                        auto tmp584 = decltype(tmp431)(tmp431 & tmp451);
+                        auto tmp585 = decltype(tmp584)(tmp584 & tmp481);
+                        auto tmp586 = decltype(tmp585)(tmp585 & tmp491);
+                        auto tmp587 = decltype(tmp586)(tmp586 & tmp531);
+                        auto tmp588 = decltype(tmp587)(tmp587 & tmp551);
+                        auto tmp589 = decltype(tmp588)(tmp588 & tmp581);
+                        auto tmp591 = tmp590 == tmp1;
+                        auto tmp592 = decltype(tmp589)(tmp589 & tmp591);
+                        auto tmp593 = decltype(tmp583)(tmp583 | tmp592);
+                        auto tmp594 = decltype(tmp441)(tmp441 & tmp461);
+                        auto tmp595 = decltype(tmp594)(tmp594 & tmp491);
+                        auto tmp596 = decltype(tmp595)(tmp595 & tmp501);
+                        auto tmp597 = decltype(tmp596)(tmp596 & tmp541);
+                        auto tmp598 = decltype(tmp597)(tmp597 & tmp561);
+                        auto tmp599 = decltype(tmp598)(tmp598 & tmp591);
+                        auto tmp601 = tmp600 == tmp1;
+                        auto tmp602 = decltype(tmp599)(tmp599 & tmp601);
+                        auto tmp603 = decltype(tmp593)(tmp593 | tmp602);
+                        auto tmp604 = decltype(tmp451)(tmp451 & tmp471);
+                        auto tmp605 = decltype(tmp604)(tmp604 & tmp501);
+                        auto tmp606 = decltype(tmp605)(tmp605 & tmp511);
+                        auto tmp607 = decltype(tmp606)(tmp606 & tmp551);
+                        auto tmp608 = decltype(tmp607)(tmp607 & tmp571);
+                        auto tmp609 = decltype(tmp608)(tmp608 & tmp601);
+                        auto tmp611 = tmp610 == tmp1;
+                        auto tmp612 = decltype(tmp609)(tmp609 & tmp611);
+                        auto tmp613 = decltype(tmp603)(tmp603 | tmp612);
+                        auto tmp614 = decltype(tmp461)(tmp461 & tmp481);
+                        auto tmp615 = decltype(tmp614)(tmp614 & tmp511);
+                        auto tmp616 = decltype(tmp615)(tmp615 & tmp521);
+                        auto tmp617 = decltype(tmp616)(tmp616 & tmp561);
+                        auto tmp618 = decltype(tmp617)(tmp617 & tmp581);
+                        auto tmp619 = decltype(tmp618)(tmp618 & tmp611);
+                        auto tmp621 = tmp620 == tmp1;
+                        auto tmp622 = decltype(tmp619)(tmp619 & tmp621);
+                        auto tmp623 = decltype(tmp613)(tmp613 | tmp622);
+                        auto tmp624 = decltype(tmp471)(tmp471 & tmp491);
+                        auto tmp625 = decltype(tmp624)(tmp624 & tmp521);
+                        auto tmp626 = decltype(tmp625)(tmp625 & tmp531);
+                        auto tmp627 = decltype(tmp626)(tmp626 & tmp571);
+                        auto tmp628 = decltype(tmp627)(tmp627 & tmp591);
+                        auto tmp629 = decltype(tmp628)(tmp628 & tmp621);
+                        auto tmp631 = tmp630 == tmp1;
+                        auto tmp632 = decltype(tmp629)(tmp629 & tmp631);
+                        auto tmp633 = decltype(tmp623)(tmp623 | tmp632);
+                        auto tmp634 = decltype(tmp481)(tmp481 & tmp501);
+                        auto tmp635 = decltype(tmp634)(tmp634 & tmp531);
+                        auto tmp636 = decltype(tmp635)(tmp635 & tmp541);
+                        auto tmp637 = decltype(tmp636)(tmp636 & tmp581);
+                        auto tmp638 = decltype(tmp637)(tmp637 & tmp601);
+                        auto tmp639 = decltype(tmp638)(tmp638 & tmp631);
+                        auto tmp641 = tmp640 == tmp1;
+                        auto tmp642 = decltype(tmp639)(tmp639 & tmp641);
+                        auto tmp643 = decltype(tmp633)(tmp633 | tmp642);
+                        auto tmp644 = decltype(tmp491)(tmp491 & tmp511);
+                        auto tmp645 = decltype(tmp644)(tmp644 & tmp541);
+                        auto tmp646 = decltype(tmp645)(tmp645 & tmp551);
+                        auto tmp647 = decltype(tmp646)(tmp646 & tmp591);
+                        auto tmp648 = decltype(tmp647)(tmp647 & tmp611);
+                        auto tmp649 = decltype(tmp648)(tmp648 & tmp641);
+                        auto tmp651 = tmp650 == tmp1;
+                        auto tmp652 = decltype(tmp649)(tmp649 & tmp651);
+                        auto tmp653 = decltype(tmp643)(tmp643 | tmp652);
+                        auto tmp654 = decltype(tmp501)(tmp501 & tmp521);
+                        auto tmp655 = decltype(tmp654)(tmp654 & tmp551);
+                        auto tmp656 = decltype(tmp655)(tmp655 & tmp561);
+                        auto tmp657 = decltype(tmp656)(tmp656 & tmp601);
+                        auto tmp658 = decltype(tmp657)(tmp657 & tmp621);
+                        auto tmp659 = decltype(tmp658)(tmp658 & tmp651);
+                        auto tmp661 = tmp660 == tmp1;
+                        auto tmp662 = decltype(tmp659)(tmp659 & tmp661);
+                        auto tmp663 = decltype(tmp653)(tmp653 | tmp662);
+                        auto tmp664 = decltype(tmp511)(tmp511 & tmp531);
+                        auto tmp665 = decltype(tmp664)(tmp664 & tmp561);
+                        auto tmp666 = decltype(tmp665)(tmp665 & tmp571);
+                        auto tmp667 = decltype(tmp666)(tmp666 & tmp611);
+                        auto tmp668 = decltype(tmp667)(tmp667 & tmp631);
+                        auto tmp669 = decltype(tmp668)(tmp668 & tmp661);
+                        auto tmp671 = tmp670 == tmp1;
+                        auto tmp672 = decltype(tmp669)(tmp669 & tmp671);
+                        auto tmp673 = decltype(tmp663)(tmp663 | tmp672);
+                        auto tmp674 = decltype(tmp521)(tmp521 & tmp541);
+                        auto tmp675 = decltype(tmp674)(tmp674 & tmp571);
+                        auto tmp676 = decltype(tmp675)(tmp675 & tmp581);
+                        auto tmp677 = decltype(tmp676)(tmp676 & tmp621);
+                        auto tmp678 = decltype(tmp677)(tmp677 & tmp641);
+                        auto tmp679 = decltype(tmp678)(tmp678 & tmp671);
+                        auto tmp681 = tmp680 == tmp1;
+                        auto tmp682 = decltype(tmp679)(tmp679 & tmp681);
+                        auto tmp683 = decltype(tmp673)(tmp673 | tmp682);
+                        auto tmp684 = decltype(tmp531)(tmp531 & tmp551);
+                        auto tmp685 = decltype(tmp684)(tmp684 & tmp581);
+                        auto tmp686 = decltype(tmp685)(tmp685 & tmp591);
+                        auto tmp687 = decltype(tmp686)(tmp686 & tmp631);
+                        auto tmp688 = decltype(tmp687)(tmp687 & tmp651);
+                        auto tmp689 = decltype(tmp688)(tmp688 & tmp681);
+                        auto tmp691 = tmp690 == tmp1;
+                        auto tmp692 = decltype(tmp689)(tmp689 & tmp691);
+                        auto tmp693 = decltype(tmp683)(tmp683 | tmp692);
+                        auto tmp694 = decltype(tmp541)(tmp541 & tmp561);
+                        auto tmp695 = decltype(tmp694)(tmp694 & tmp591);
+                        auto tmp696 = decltype(tmp695)(tmp695 & tmp601);
+                        auto tmp697 = decltype(tmp696)(tmp696 & tmp641);
+                        auto tmp698 = decltype(tmp697)(tmp697 & tmp661);
+                        auto tmp699 = decltype(tmp698)(tmp698 & tmp691);
+                        auto tmp701 = tmp700 == tmp1;
+                        auto tmp702 = decltype(tmp699)(tmp699 & tmp701);
+                        auto tmp703 = decltype(tmp693)(tmp693 | tmp702);
+                        auto tmp704 = decltype(tmp551)(tmp551 & tmp571);
+                        auto tmp705 = decltype(tmp704)(tmp704 & tmp601);
+                        auto tmp706 = decltype(tmp705)(tmp705 & tmp611);
+                        auto tmp707 = decltype(tmp706)(tmp706 & tmp651);
+                        auto tmp708 = decltype(tmp707)(tmp707 & tmp671);
+                        auto tmp709 = decltype(tmp708)(tmp708 & tmp701);
+                        auto tmp711 = tmp710 == tmp1;
+                        auto tmp712 = decltype(tmp709)(tmp709 & tmp711);
+                        auto tmp713 = decltype(tmp703)(tmp703 | tmp712);
+                        auto tmp714 = decltype(tmp561)(tmp561 & tmp581);
+                        auto tmp715 = decltype(tmp714)(tmp714 & tmp611);
+                        auto tmp716 = decltype(tmp715)(tmp715 & tmp621);
+                        auto tmp717 = decltype(tmp716)(tmp716 & tmp661);
+                        auto tmp718 = decltype(tmp717)(tmp717 & tmp681);
+                        auto tmp719 = decltype(tmp718)(tmp718 & tmp711);
+                        auto tmp721 = tmp720 == tmp1;
+                        auto tmp722 = decltype(tmp719)(tmp719 & tmp721);
+                        auto tmp723 = decltype(tmp713)(tmp713 | tmp722);
+                        auto tmp724 = decltype(tmp571)(tmp571 & tmp591);
+                        auto tmp725 = decltype(tmp724)(tmp724 & tmp621);
+                        auto tmp726 = decltype(tmp725)(tmp725 & tmp631);
+                        auto tmp727 = decltype(tmp726)(tmp726 & tmp671);
+                        auto tmp728 = decltype(tmp727)(tmp727 & tmp691);
+                        auto tmp729 = decltype(tmp728)(tmp728 & tmp721);
+                        auto tmp731 = tmp730 == tmp1;
+                        auto tmp732 = decltype(tmp729)(tmp729 & tmp731);
+                        auto tmp733 = decltype(tmp723)(tmp723 | tmp732);
+                        auto tmp734 = decltype(tmp581)(tmp581 & tmp601);
+                        auto tmp735 = decltype(tmp734)(tmp734 & tmp631);
+                        auto tmp736 = decltype(tmp735)(tmp735 & tmp641);
+                        auto tmp737 = decltype(tmp736)(tmp736 & tmp681);
+                        auto tmp738 = decltype(tmp737)(tmp737 & tmp701);
+                        auto tmp739 = decltype(tmp738)(tmp738 & tmp731);
+                        auto tmp741 = tmp740 == tmp1;
+                        auto tmp742 = decltype(tmp739)(tmp739 & tmp741);
+                        auto tmp743 = decltype(tmp733)(tmp733 | tmp742);
+                        auto tmp744 = decltype(tmp591)(tmp591 & tmp611);
+                        auto tmp745 = decltype(tmp744)(tmp744 & tmp641);
+                        auto tmp746 = decltype(tmp745)(tmp745 & tmp651);
+                        auto tmp747 = decltype(tmp746)(tmp746 & tmp691);
+                        auto tmp748 = decltype(tmp747)(tmp747 & tmp711);
+                        auto tmp749 = decltype(tmp748)(tmp748 & tmp741);
+                        auto tmp751 = tmp750 == tmp1;
+                        auto tmp752 = decltype(tmp749)(tmp749 & tmp751);
+                        auto tmp753 = decltype(tmp743)(tmp743 | tmp752);
+                        auto tmp754 = decltype(tmp601)(tmp601 & tmp621);
+                        auto tmp755 = decltype(tmp754)(tmp754 & tmp651);
+                        auto tmp756 = decltype(tmp755)(tmp755 & tmp661);
+                        auto tmp757 = decltype(tmp756)(tmp756 & tmp701);
+                        auto tmp758 = decltype(tmp757)(tmp757 & tmp721);
+                        auto tmp759 = decltype(tmp758)(tmp758 & tmp751);
+                        auto tmp761 = tmp760 == tmp1;
+                        auto tmp762 = decltype(tmp759)(tmp759 & tmp761);
+                        auto tmp763 = decltype(tmp753)(tmp753 | tmp762);
+                        auto tmp764 = decltype(tmp611)(tmp611 & tmp631);
+                        auto tmp765 = decltype(tmp764)(tmp764 & tmp661);
+                        auto tmp766 = decltype(tmp765)(tmp765 & tmp671);
+                        auto tmp767 = decltype(tmp766)(tmp766 & tmp711);
+                        auto tmp768 = decltype(tmp767)(tmp767 & tmp731);
+                        auto tmp769 = decltype(tmp768)(tmp768 & tmp761);
+                        auto tmp771 = tmp770 == tmp1;
+                        auto tmp772 = decltype(tmp769)(tmp769 & tmp771);
+                        auto tmp773 = decltype(tmp763)(tmp763 | tmp772);
+                        auto tmp774 = decltype(tmp621)(tmp621 & tmp641);
+                        auto tmp775 = decltype(tmp774)(tmp774 & tmp671);
+                        auto tmp776 = decltype(tmp775)(tmp775 & tmp681);
+                        auto tmp777 = decltype(tmp776)(tmp776 & tmp721);
+                        auto tmp778 = decltype(tmp777)(tmp777 & tmp741);
+                        auto tmp779 = decltype(tmp778)(tmp778 & tmp771);
+                        auto tmp781 = tmp780 == tmp1;
+                        auto tmp782 = decltype(tmp779)(tmp779 & tmp781);
+                        auto tmp783 = decltype(tmp773)(tmp773 | tmp782);
+                        auto tmp784 = decltype(tmp631)(tmp631 & tmp651);
+                        auto tmp785 = decltype(tmp784)(tmp784 & tmp681);
+                        auto tmp786 = decltype(tmp785)(tmp785 & tmp691);
+                        auto tmp787 = decltype(tmp786)(tmp786 & tmp731);
+                        auto tmp788 = decltype(tmp787)(tmp787 & tmp751);
+                        auto tmp789 = decltype(tmp788)(tmp788 & tmp781);
+                        auto tmp791 = tmp790 == tmp1;
+                        auto tmp792 = decltype(tmp789)(tmp789 & tmp791);
+                        auto tmp793 = decltype(tmp783)(tmp783 | tmp792);
+                        auto tmp794 = decltype(tmp641)(tmp641 & tmp661);
+                        auto tmp795 = decltype(tmp794)(tmp794 & tmp691);
+                        auto tmp796 = decltype(tmp795)(tmp795 & tmp701);
+                        auto tmp797 = decltype(tmp796)(tmp796 & tmp741);
+                        auto tmp798 = decltype(tmp797)(tmp797 & tmp761);
+                        auto tmp799 = decltype(tmp798)(tmp798 & tmp791);
+                        auto tmp801 = tmp800 == tmp1;
+                        auto tmp802 = decltype(tmp799)(tmp799 & tmp801);
+                        auto tmp803 = decltype(tmp793)(tmp793 | tmp802);
+                        auto tmp804 = decltype(tmp651)(tmp651 & tmp671);
+                        auto tmp805 = decltype(tmp804)(tmp804 & tmp701);
+                        auto tmp806 = decltype(tmp805)(tmp805 & tmp711);
+                        auto tmp807 = decltype(tmp806)(tmp806 & tmp751);
+                        auto tmp808 = decltype(tmp807)(tmp807 & tmp771);
+                        auto tmp809 = decltype(tmp808)(tmp808 & tmp801);
+                        auto tmp811 = tmp810 == tmp1;
+                        auto tmp812 = decltype(tmp809)(tmp809 & tmp811);
+                        auto tmp813 = decltype(tmp803)(tmp803 | tmp812);
+                        auto tmp814 = decltype(tmp661)(tmp661 & tmp681);
+                        auto tmp815 = decltype(tmp814)(tmp814 & tmp711);
+                        auto tmp816 = decltype(tmp815)(tmp815 & tmp721);
+                        auto tmp817 = decltype(tmp816)(tmp816 & tmp761);
+                        auto tmp818 = decltype(tmp817)(tmp817 & tmp781);
+                        auto tmp819 = decltype(tmp818)(tmp818 & tmp811);
+                        auto tmp821 = tmp820 == tmp1;
+                        auto tmp822 = decltype(tmp819)(tmp819 & tmp821);
+                        auto tmp823 = decltype(tmp813)(tmp813 | tmp822);
+                        auto tmp824 = decltype(tmp671)(tmp671 & tmp691);
+                        auto tmp825 = decltype(tmp824)(tmp824 & tmp721);
+                        auto tmp826 = decltype(tmp825)(tmp825 & tmp731);
+                        auto tmp827 = decltype(tmp826)(tmp826 & tmp771);
+                        auto tmp828 = decltype(tmp827)(tmp827 & tmp791);
+                        auto tmp829 = decltype(tmp828)(tmp828 & tmp821);
+                        auto tmp831 = tmp830 == tmp1;
+                        auto tmp832 = decltype(tmp829)(tmp829 & tmp831);
+                        auto tmp833 = decltype(tmp823)(tmp823 | tmp832);
+                        auto tmp834 = decltype(tmp681)(tmp681 & tmp701);
+                        auto tmp835 = decltype(tmp834)(tmp834 & tmp731);
+                        auto tmp836 = decltype(tmp835)(tmp835 & tmp741);
+                        auto tmp837 = decltype(tmp836)(tmp836 & tmp781);
+                        auto tmp838 = decltype(tmp837)(tmp837 & tmp801);
+                        auto tmp839 = decltype(tmp838)(tmp838 & tmp831);
+                        auto tmp841 = tmp840 == tmp1;
+                        auto tmp842 = decltype(tmp839)(tmp839 & tmp841);
+                        auto tmp843 = decltype(tmp833)(tmp833 | tmp842);
+                        auto tmp844 = decltype(tmp691)(tmp691 & tmp711);
+                        auto tmp845 = decltype(tmp844)(tmp844 & tmp741);
+                        auto tmp846 = decltype(tmp845)(tmp845 & tmp751);
+                        auto tmp847 = decltype(tmp846)(tmp846 & tmp791);
+                        auto tmp848 = decltype(tmp847)(tmp847 & tmp811);
+                        auto tmp849 = decltype(tmp848)(tmp848 & tmp841);
+                        auto tmp851 = tmp850 == tmp1;
+                        auto tmp852 = decltype(tmp849)(tmp849 & tmp851);
+                        auto tmp853 = decltype(tmp843)(tmp843 | tmp852);
+                        auto tmp854 = decltype(tmp701)(tmp701 & tmp721);
+                        auto tmp855 = decltype(tmp854)(tmp854 & tmp751);
+                        auto tmp856 = decltype(tmp855)(tmp855 & tmp761);
+                        auto tmp857 = decltype(tmp856)(tmp856 & tmp801);
+                        auto tmp858 = decltype(tmp857)(tmp857 & tmp821);
+                        auto tmp859 = decltype(tmp858)(tmp858 & tmp851);
+                        auto tmp861 = tmp860 == tmp1;
+                        auto tmp862 = decltype(tmp859)(tmp859 & tmp861);
+                        auto tmp863 = decltype(tmp853)(tmp853 | tmp862);
+                        auto tmp864 = decltype(tmp711)(tmp711 & tmp731);
+                        auto tmp865 = decltype(tmp864)(tmp864 & tmp761);
+                        auto tmp866 = decltype(tmp865)(tmp865 & tmp771);
+                        auto tmp867 = decltype(tmp866)(tmp866 & tmp811);
+                        auto tmp868 = decltype(tmp867)(tmp867 & tmp831);
+                        auto tmp869 = decltype(tmp868)(tmp868 & tmp861);
+                        auto tmp871 = tmp870 == tmp1;
+                        auto tmp872 = decltype(tmp869)(tmp869 & tmp871);
+                        auto tmp873 = decltype(tmp863)(tmp863 | tmp872);
+                        auto tmp874 = decltype(tmp721)(tmp721 & tmp741);
+                        auto tmp875 = decltype(tmp874)(tmp874 & tmp771);
+                        auto tmp876 = decltype(tmp875)(tmp875 & tmp781);
+                        auto tmp877 = decltype(tmp876)(tmp876 & tmp821);
+                        auto tmp878 = decltype(tmp877)(tmp877 & tmp841);
+                        auto tmp879 = decltype(tmp878)(tmp878 & tmp871);
+                        auto tmp881 = tmp880 == tmp1;
+                        auto tmp882 = decltype(tmp879)(tmp879 & tmp881);
+                        auto tmp883 = decltype(tmp873)(tmp873 | tmp882);
+                        auto tmp884 = decltype(tmp731)(tmp731 & tmp751);
+                        auto tmp885 = decltype(tmp884)(tmp884 & tmp781);
+                        auto tmp886 = decltype(tmp885)(tmp885 & tmp791);
+                        auto tmp887 = decltype(tmp886)(tmp886 & tmp831);
+                        auto tmp888 = decltype(tmp887)(tmp887 & tmp851);
+                        auto tmp889 = decltype(tmp888)(tmp888 & tmp881);
+                        auto tmp891 = tmp890 == tmp1;
+                        auto tmp892 = decltype(tmp889)(tmp889 & tmp891);
+                        auto tmp893 = decltype(tmp883)(tmp883 | tmp892);
+                        auto tmp894 = decltype(tmp741)(tmp741 & tmp761);
+                        auto tmp895 = decltype(tmp894)(tmp894 & tmp791);
+                        auto tmp896 = decltype(tmp895)(tmp895 & tmp801);
+                        auto tmp897 = decltype(tmp896)(tmp896 & tmp841);
+                        auto tmp898 = decltype(tmp897)(tmp897 & tmp861);
+                        auto tmp899 = decltype(tmp898)(tmp898 & tmp891);
+                        auto tmp901 = tmp900 == tmp1;
+                        auto tmp902 = decltype(tmp899)(tmp899 & tmp901);
+                        auto tmp903 = decltype(tmp893)(tmp893 | tmp902);
+                        auto tmp904 = decltype(tmp751)(tmp751 & tmp771);
+                        auto tmp905 = decltype(tmp904)(tmp904 & tmp801);
+                        auto tmp906 = decltype(tmp905)(tmp905 & tmp811);
+                        auto tmp907 = decltype(tmp906)(tmp906 & tmp851);
+                        auto tmp908 = decltype(tmp907)(tmp907 & tmp871);
+                        auto tmp909 = decltype(tmp908)(tmp908 & tmp901);
+                        auto tmp911 = tmp910 == tmp1;
+                        auto tmp912 = decltype(tmp909)(tmp909 & tmp911);
+                        auto tmp913 = decltype(tmp903)(tmp903 | tmp912);
+                        auto tmp914 = decltype(tmp761)(tmp761 & tmp781);
+                        auto tmp915 = decltype(tmp914)(tmp914 & tmp811);
+                        auto tmp916 = decltype(tmp915)(tmp915 & tmp821);
+                        auto tmp917 = decltype(tmp916)(tmp916 & tmp861);
+                        auto tmp918 = decltype(tmp917)(tmp917 & tmp881);
+                        auto tmp919 = decltype(tmp918)(tmp918 & tmp911);
+                        auto tmp921 = tmp920 == tmp1;
+                        auto tmp922 = decltype(tmp919)(tmp919 & tmp921);
+                        auto tmp923 = decltype(tmp913)(tmp913 | tmp922);
+                        auto tmp924 = decltype(tmp771)(tmp771 & tmp791);
+                        auto tmp925 = decltype(tmp924)(tmp924 & tmp821);
+                        auto tmp926 = decltype(tmp925)(tmp925 & tmp831);
+                        auto tmp927 = decltype(tmp926)(tmp926 & tmp871);
+                        auto tmp928 = decltype(tmp927)(tmp927 & tmp891);
+                        auto tmp929 = decltype(tmp928)(tmp928 & tmp921);
+                        auto tmp931 = tmp930 == tmp1;
+                        auto tmp932 = decltype(tmp929)(tmp929 & tmp931);
+                        auto tmp933 = decltype(tmp923)(tmp923 | tmp932);
+                        auto tmp934 = decltype(tmp781)(tmp781 & tmp801);
+                        auto tmp935 = decltype(tmp934)(tmp934 & tmp831);
+                        auto tmp936 = decltype(tmp935)(tmp935 & tmp841);
+                        auto tmp937 = decltype(tmp936)(tmp936 & tmp881);
+                        auto tmp938 = decltype(tmp937)(tmp937 & tmp901);
+                        auto tmp939 = decltype(tmp938)(tmp938 & tmp931);
+                        auto tmp941 = tmp940 == tmp1;
+                        auto tmp942 = decltype(tmp939)(tmp939 & tmp941);
+                        auto tmp943 = decltype(tmp933)(tmp933 | tmp942);
+                        auto tmp944 = decltype(tmp791)(tmp791 & tmp811);
+                        auto tmp945 = decltype(tmp944)(tmp944 & tmp841);
+                        auto tmp946 = decltype(tmp945)(tmp945 & tmp851);
+                        auto tmp947 = decltype(tmp946)(tmp946 & tmp891);
+                        auto tmp948 = decltype(tmp947)(tmp947 & tmp911);
+                        auto tmp949 = decltype(tmp948)(tmp948 & tmp941);
+                        auto tmp951 = tmp950 == tmp1;
+                        auto tmp952 = decltype(tmp949)(tmp949 & tmp951);
+                        auto tmp953 = decltype(tmp943)(tmp943 | tmp952);
+                        auto tmp954 = decltype(tmp801)(tmp801 & tmp821);
+                        auto tmp955 = decltype(tmp954)(tmp954 & tmp851);
+                        auto tmp956 = decltype(tmp955)(tmp955 & tmp861);
+                        auto tmp957 = decltype(tmp956)(tmp956 & tmp901);
+                        auto tmp958 = decltype(tmp957)(tmp957 & tmp921);
+                        auto tmp959 = decltype(tmp958)(tmp958 & tmp951);
+                        auto tmp961 = tmp960 == tmp1;
+                        auto tmp962 = decltype(tmp959)(tmp959 & tmp961);
+                        auto tmp963 = decltype(tmp953)(tmp953 | tmp962);
+                        auto tmp964 = decltype(tmp811)(tmp811 & tmp831);
+                        auto tmp965 = decltype(tmp964)(tmp964 & tmp861);
+                        auto tmp966 = decltype(tmp965)(tmp965 & tmp871);
+                        auto tmp967 = decltype(tmp966)(tmp966 & tmp911);
+                        auto tmp968 = decltype(tmp967)(tmp967 & tmp931);
+                        auto tmp969 = decltype(tmp968)(tmp968 & tmp961);
+                        auto tmp971 = tmp970 == tmp1;
+                        auto tmp972 = decltype(tmp969)(tmp969 & tmp971);
+                        auto tmp973 = decltype(tmp963)(tmp963 | tmp972);
+                        auto tmp974 = decltype(tmp821)(tmp821 & tmp841);
+                        auto tmp975 = decltype(tmp974)(tmp974 & tmp871);
+                        auto tmp976 = decltype(tmp975)(tmp975 & tmp881);
+                        auto tmp977 = decltype(tmp976)(tmp976 & tmp921);
+                        auto tmp978 = decltype(tmp977)(tmp977 & tmp941);
+                        auto tmp979 = decltype(tmp978)(tmp978 & tmp971);
+                        auto tmp981 = tmp980 == tmp1;
+                        auto tmp982 = decltype(tmp979)(tmp979 & tmp981);
+                        auto tmp983 = decltype(tmp973)(tmp973 | tmp982);
+                        auto tmp984 = decltype(tmp831)(tmp831 & tmp851);
+                        auto tmp985 = decltype(tmp984)(tmp984 & tmp881);
+                        auto tmp986 = decltype(tmp985)(tmp985 & tmp891);
+                        auto tmp987 = decltype(tmp986)(tmp986 & tmp931);
+                        auto tmp988 = decltype(tmp987)(tmp987 & tmp951);
+                        auto tmp989 = decltype(tmp988)(tmp988 & tmp981);
+                        auto tmp991 = tmp990 == tmp1;
+                        auto tmp992 = decltype(tmp989)(tmp989 & tmp991);
+                        auto tmp993 = decltype(tmp983)(tmp983 | tmp992);
+                        auto tmp994 = decltype(tmp841)(tmp841 & tmp861);
+                        auto tmp995 = decltype(tmp994)(tmp994 & tmp891);
+                        auto tmp996 = decltype(tmp995)(tmp995 & tmp901);
+                        auto tmp997 = decltype(tmp996)(tmp996 & tmp941);
+                        auto tmp998 = decltype(tmp997)(tmp997 & tmp961);
+                        auto tmp999 = decltype(tmp998)(tmp998 & tmp991);
+                        auto tmp1001 = tmp1000 == tmp1;
+                        auto tmp1002 = decltype(tmp999)(tmp999 & tmp1001);
+                        auto tmp1003 = decltype(tmp993)(tmp993 | tmp1002);
+                        auto tmp1004 = decltype(tmp851)(tmp851 & tmp871);
+                        auto tmp1005 = decltype(tmp1004)(tmp1004 & tmp901);
+                        auto tmp1006 = decltype(tmp1005)(tmp1005 & tmp911);
+                        auto tmp1007 = decltype(tmp1006)(tmp1006 & tmp951);
+                        auto tmp1008 = decltype(tmp1007)(tmp1007 & tmp971);
+                        auto tmp1009 = decltype(tmp1008)(tmp1008 & tmp1001);
+                        auto tmp1011 = tmp1010 == tmp1;
+                        auto tmp1012 = decltype(tmp1009)(tmp1009 & tmp1011);
+                        auto tmp1013 = decltype(tmp1003)(tmp1003 | tmp1012);
+                        auto tmp1014 = decltype(tmp861)(tmp861 & tmp881);
+                        auto tmp1015 = decltype(tmp1014)(tmp1014 & tmp911);
+                        auto tmp1016 = decltype(tmp1015)(tmp1015 & tmp921);
+                        auto tmp1017 = decltype(tmp1016)(tmp1016 & tmp961);
+                        auto tmp1018 = decltype(tmp1017)(tmp1017 & tmp981);
+                        auto tmp1019 = decltype(tmp1018)(tmp1018 & tmp1011);
+                        auto tmp1021 = tmp1020 == tmp1;
+                        auto tmp1022 = decltype(tmp1019)(tmp1019 & tmp1021);
+                        auto tmp1023 = decltype(tmp1013)(tmp1013 | tmp1022);
+                        auto tmp1024 = decltype(tmp871)(tmp871 & tmp891);
+                        auto tmp1025 = decltype(tmp1024)(tmp1024 & tmp921);
+                        auto tmp1026 = decltype(tmp1025)(tmp1025 & tmp931);
+                        auto tmp1027 = decltype(tmp1026)(tmp1026 & tmp971);
+                        auto tmp1028 = decltype(tmp1027)(tmp1027 & tmp991);
+                        auto tmp1029 = decltype(tmp1028)(tmp1028 & tmp1021);
+                        auto tmp1031 = tmp1030 == tmp1;
+                        auto tmp1032 = decltype(tmp1029)(tmp1029 & tmp1031);
+                        auto tmp1033 = decltype(tmp1023)(tmp1023 | tmp1032);
+                        auto tmp1035 = static_cast<int64_t>(8);
+                        auto tmp1036 = tmp1034 >= tmp1035;
+                        auto tmp1037 = decltype(tmp1033)(tmp1033 & tmp1036);
+                        auto tmp1038 = c10::convert<float>(tmp1037);
+                        out_ptr4[static_cast<int64_t>(0L)] = tmp1038;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Python bindings to call kernel():
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+#include <sstream>
+#include <cstdlib>
+
+#ifndef _MSC_VER
+#if __cplusplus < 202002L
+// C++20 (earlier) code
+// https://en.cppreference.com/w/cpp/language/attributes/likely
+#define likely(x)       __builtin_expect(!!(x), 1)
+#define unlikely(x)     __builtin_expect(!!(x), 0)
+#endif
+#else
+#define likely(x) (x)
+#define unlikely(x) (x)
+#endif
+
+// This is defined in guards.cpp so we don't need to import PyTorch headers that are slooow.
+// We manually link it below to workaround issues with fbcode build.
+static void* (*_torchinductor_pyobject_tensor_data_ptr)(PyObject* obj);
+
+template <typename T> static inline T parse_arg(PyObject* args, size_t n) {
+    static_assert(std::is_pointer_v<T>, "arg type must be pointer or long");
+    return static_cast<T>(_torchinductor_pyobject_tensor_data_ptr(PyTuple_GET_ITEM(args, n)));
+}
+template <> inline int64_t parse_arg<int64_t>(PyObject* args, size_t n) {
+    auto result = PyLong_AsSsize_t(PyTuple_GET_ITEM(args, n));
+    if(unlikely(result == -1 && PyErr_Occurred()))
+        throw std::runtime_error("expected int arg");
+    return result;
+}
+template <> inline uintptr_t parse_arg<uintptr_t>(PyObject* args, size_t n) {
+    auto result = PyLong_AsVoidPtr(PyTuple_GET_ITEM(args, n));
+    if(unlikely(result == reinterpret_cast<void*>(-1) && PyErr_Occurred()))
+        throw std::runtime_error("expected int arg");
+    return reinterpret_cast<uintptr_t>(result);
+}
+template <> inline float parse_arg<float>(PyObject* args, size_t n) {
+    auto result = PyFloat_AsDouble(PyTuple_GET_ITEM(args, n));
+    if(unlikely(result == -1.0 && PyErr_Occurred()))
+        throw std::runtime_error("expected float arg");
+    return static_cast<float>(result);
+}
+
+
+
+static PyObject* kernel_py(PyObject* self, PyObject* args) {
+    try {
+        if(unlikely(!PyTuple_CheckExact(args)))
+            throw std::runtime_error("tuple args required");
+        if(unlikely(PyTuple_GET_SIZE(args) != 9))
+            throw std::runtime_error("requires 9 args");
+        kernel(parse_arg<float*>(args, 0), parse_arg<float*>(args, 1), parse_arg<float*>(args, 2), parse_arg<float*>(args, 3), parse_arg<int64_t*>(args, 4), parse_arg<float*>(args, 5), parse_arg<float*>(args, 6), parse_arg<int64_t*>(args, 7), parse_arg<float*>(args, 8)); Py_RETURN_NONE;
+    } catch(std::exception const& e) {
+        PyErr_SetString(PyExc_RuntimeError, e.what());
+        return nullptr;
+    } catch(...) {
+        PyErr_SetString(PyExc_RuntimeError, "unhandled error");
+        return nullptr;
+    }
+}
+
+static PyMethodDef py_methods[] = {
+    {"kernel", kernel_py, METH_VARARGS, ""},
+    {NULL, NULL, 0, NULL}};
+
+static struct PyModuleDef py_module =
+    {PyModuleDef_HEAD_INIT, "kernel", NULL, -1, py_methods};
+
+PyMODINIT_FUNC PyInit_kernel(void) {
+    const char* str_addr = std::getenv("_TORCHINDUCTOR_PYOBJECT_TENSOR_DATA_PTR");
+    if(!str_addr) {
+        PyErr_SetString(PyExc_RuntimeError, "_TORCHINDUCTOR_PYOBJECT_TENSOR_DATA_PTR must be set");
+        return nullptr;
+    }
+    std::istringstream iss(str_addr);
+    uintptr_t addr = 0;
+    iss >> addr;
+    _torchinductor_pyobject_tensor_data_ptr =
+        reinterpret_cast<decltype(_torchinductor_pyobject_tensor_data_ptr)>(addr);
+    PyObject* module = PyModule_Create(&py_module);
+    if (module == NULL) {
+        return NULL;
+    }
+    #ifdef Py_GIL_DISABLED
+        PyUnstable_Module_SetGIL(module, Py_MOD_GIL_NOT_USED);
+    #endif
+    return module;
+}

@@ -1,0 +1,13 @@
+graph():
+    %l_self_modules_embedding_parameters_weight_ : torch.nn.parameter.Parameter [num_users=1] = placeholder[target=L_self_modules_embedding_parameters_weight_]
+    %l_input_ids_ : torch.Tensor [num_users=1] = placeholder[target=L_input_ids_]
+    %l_self_modules_fc1_parameters_weight_ : torch.nn.parameter.Parameter [num_users=1] = placeholder[target=L_self_modules_fc1_parameters_weight_]
+    %l_self_modules_fc1_parameters_bias_ : torch.nn.parameter.Parameter [num_users=1] = placeholder[target=L_self_modules_fc1_parameters_bias_]
+    %l_self_modules_fc2_parameters_weight_ : torch.nn.parameter.Parameter [num_users=1] = placeholder[target=L_self_modules_fc2_parameters_weight_]
+    %l_self_modules_fc2_parameters_bias_ : torch.nn.parameter.Parameter [num_users=1] = placeholder[target=L_self_modules_fc2_parameters_bias_]
+    %x : [num_users=1] = call_function[target=torch.nn.functional.embedding](args = (%l_input_ids_, %l_self_modules_embedding_parameters_weight_, None, None, 2.0, False, False), kwargs = {})
+    %x_1 : [num_users=1] = call_method[target=mean](args = (%x,), kwargs = {dim: 1})
+    %x_2 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%x_1, %l_self_modules_fc1_parameters_weight_, %l_self_modules_fc1_parameters_bias_), kwargs = {})
+    %x_3 : [num_users=1] = call_function[target=torch.nn.functional.relu](args = (%x_2,), kwargs = {inplace: False})
+    %x_4 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%x_3, %l_self_modules_fc2_parameters_weight_, %l_self_modules_fc2_parameters_bias_), kwargs = {})
+    return (x_4,)

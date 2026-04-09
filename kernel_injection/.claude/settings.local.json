@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /home/jinkun/Documents/pytorch2_wjk/kernel_injection/*.md 2>/dev/null2)",
+      "Bash(ls -la /home/jinkun/Documents/pytorch2_wjk/kernel_injection/*.py /home/jinkun/Documents/pytorch2_wjk/kernel_injection/*.md)"
+    ]
+  }
+}
