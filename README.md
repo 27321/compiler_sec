@@ -8,8 +8,14 @@
 3. 对Code Generation阶段产物.source文件与.cubin文件反汇编得到的.sass文件进行差分分析。
 
 
+（1）early_injection文件夹是对早期阶段的攻击以及单文件检测。
 
-（1）fusion_injection文件夹是对Fusion阶段的攻击以及对攻击得到的产物进行检测。
+本文件夹试验性文件较多，大部分可不看。
+
+可用文件为detect_readable.py,该文件是对fx_graph_readable.py进行单文件检测的实现，detect_readable.md为其方法说明。
+
+
+（2）fusion_injection文件夹是对Fusion阶段的攻击以及对攻击得到的产物进行检测。
 
 修改源文件：/root/miniconda3/envs/hf_env/lib/python3.11/site-packages/torch/_inductor/scheduler.py
 scheduler_original.py是原始文件备份，scheduler.py是将其替换的攻击版本文件。
@@ -35,7 +41,7 @@ fushion_injection.md是攻击方法文档。
 
 
 
-（2）kernel_injection文件夹是对Code Generation阶段的攻击以及对攻击得到的产物进行检测。
+（3）kernel_injection文件夹是对Code Generation阶段的攻击以及对攻击得到的产物进行检测。
 
 修改源文件：/root/miniconda3/envs/hf_env/lib/python3.11/site-packages/triton/backends/nvidia/compiler.py
 
