@@ -1,4 +1,0 @@
-Step 1: torchdynamo start tracing forward /root/miniconda3/envs/hf_env/lib/python3.11/site-packages/transformers/models/bert/modeling_bert.py:913
-Step 1: torchdynamo done tracing forward (RETURN_VALUE)
-Step 2: calling compiler function inductor
-Step 2: done compiler function inductor
